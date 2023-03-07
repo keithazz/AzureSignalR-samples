@@ -59,7 +59,7 @@ You can also deploy this sample via existing docker image
 ```
 docker run -e Azure__SignalR__ConnectionString="<signalr-connection-string>" \
            -e STORAGE_CONN_STRING="<storage-connection-string>" \
-		   -p 5000:80 mcr.microsoft.com/signalrsamples/reliablechatroom:latest
+		   -p 5001:80 mcr.microsoft.com/signalrsamples/reliablechatroom:latest
 ```
 
 
@@ -69,7 +69,7 @@ If you want to use your own database to store the messages and sessions, you sho
 
 Then, register your services in `Startup.ConfigureServices` like above and run the app
 
-When you open http://localhost:5000, you can see the application using the configured storage services.
+When you open http://localhost:5001, you can see the application using the configured storage services.
 
 ## Publish your application
 
