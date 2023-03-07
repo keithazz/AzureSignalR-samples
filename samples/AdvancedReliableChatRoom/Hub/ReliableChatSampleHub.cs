@@ -32,9 +32,9 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
             await Clients.Caller.SendAsync("updateSessions", userSessions);
 
             var onConnectedMessage = sender + " joined the chat room";
-            var message = new Message("Public", DateTime.Now, onConnectedMessage, "Sent");
+            var message = new Message("Information", DateTime.Now, onConnectedMessage, "Sent");
             var sequenceId = await _messageHandler.AddNewMessageAsync("Public", message);
-            await Clients.All.SendAsync("displayUserMessage", "Public", sequenceId, "Public", onConnectedMessage);
+            await Clients.All.SendAsync("displayUserMessage", "Public", sequenceId, "Information", onConnectedMessage);
             
             await base.OnConnectedAsync();
         }
@@ -44,9 +44,9 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
             var sender = Context.UserIdentifier;
 
             var onDisconnectedMessage = sender + " left the chat room";
-            var message = new Message("Public", DateTime.Now, onDisconnectedMessage, "Sent");
+            var message = new Message("Information", DateTime.Now, onDisconnectedMessage, "Sent");
             var sequenceId = await _messageHandler.AddNewMessageAsync("Public", message);
-            await Clients.All.SendAsync("displayUserMessage", "Public", sequenceId, "Public", onDisconnectedMessage);
+            await Clients.All.SendAsync("displayUserMessage", "Public", sequenceId, "Information", onDisconnectedMessage);
 
             await base.OnDisconnectedAsync(exception);
         }
