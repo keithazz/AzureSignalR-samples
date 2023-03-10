@@ -2,7 +2,7 @@
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <UserSecretsId>reliablechatroom</UserSecretsId>
-    <RootNamespace>Microsoft.Azure.SignalR.Samples.ReliableChatRoom</RootNamespace>
+    <RootNamespace>Microsoft.Azure.SignalR.Samples.InfotopiaChatRoom</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

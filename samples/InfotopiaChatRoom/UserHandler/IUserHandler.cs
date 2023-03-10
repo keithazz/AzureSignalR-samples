@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Azure.SignalR.Samples.InfotopiaChatRoom
 {
-    public interface ISessionHandler
+    public interface IUserHandler
     {
     }
 }

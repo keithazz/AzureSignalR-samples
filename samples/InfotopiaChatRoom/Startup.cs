@@ -6,7 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System.Security.Claims;
 
-namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
+namespace Microsoft.Azure.SignalR.Samples.InfotopiaChatRoom
 {
     public class Startup
     {
@@ -42,7 +42,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
             app.UseFileServer();
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapHub<ReliableChatSampleHub>("/chat");
+                endpoints.MapHub<InfotopiaChatSampleHub>("/chat");
             }
             );
         }
