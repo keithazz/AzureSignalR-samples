@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
+namespace Microsoft.Azure.SignalR.Samples.InfotopiaChatRoom
 {
     public class Room
     {
@@ -12,6 +12,9 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
 
         // "Private" or "Group"
         public string RoomType { get; set; }
+
+        // "Admin" or "Member"
+        public string UserRole { get; set; }
 
         // the name which will be shown to the user in the chat list
         public string DisplayName { get; set; }

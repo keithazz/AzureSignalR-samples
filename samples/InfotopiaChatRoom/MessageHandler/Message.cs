@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
+namespace Microsoft.Azure.SignalR.Samples.InfotopiaChatRoom
 {
     public class Message : IComparable<Message>
     {
