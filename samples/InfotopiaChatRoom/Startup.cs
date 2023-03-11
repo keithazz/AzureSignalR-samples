@@ -32,7 +32,7 @@ namespace Microsoft.Azure.SignalR.Samples.InfotopiaChatRoom
                         };
                     });
 
-            services.AddSingleton<ISessionHandler, AzureTableSessionStorage>();
+            services.AddSingleton<IRoomHandler, AzureTableRoomStorage>();
             services.AddSingleton<IMessageHandler, AzureTableMessageStorage>();
         }
 

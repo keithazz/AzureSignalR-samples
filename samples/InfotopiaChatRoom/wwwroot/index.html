@@ -37,7 +37,7 @@
                 </div>
             </td>
             <td>
-                <div id="sessionLabel" class="sessionlabel" style="height: 80px">Public</div>
+                <div id="roomLabel" class="roomlabel" style="height: 80px">Public</div>
                 <div style="height:calc(100% - 80px);">
                     <div id="messages" style="background-color: whitesmoke;"></div>
                     <div style="width: 100%; border-left:1px solid #ccc; border-right:1px solid #ccc;">
@@ -71,10 +71,10 @@
         document.addEventListener('DOMContentLoaded', function () {
 
             let username = Math.random().toString(36).substring(2, 10);
-            let sessionMap = new Map([
+            let roomMap = new Map([
                 ['Public', 'Public']
             ]);
-            let currentSession = 'Public';
+            let currentRoom = 'Public';
             let currentUser = 'Public';
 
             const generateGuid = function () {
@@ -90,40 +90,40 @@
                 return message.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
             }
 
-            const addNewSessionCard = function (userName, sessionId, lastestMessage) {
+            const addNewRoomCard = function (userName, roomId, lastestMessage) {
                 const entry = document.createElement('div');
-                entry.id = sessionId;
+                entry.id = roomId;
                 entry.classList.add("usercard");
-                if (sessionId === 'Public') {
+                if (roomId === 'Public') {
                     entry.style.backgroundColor = "#d0d0d0";
                 }
                 entry.innerHTML =
-                    `<div class="usercardname" id="userName-${sessionId}">${userName}</div>
-                    <div class="usercardmessage" id="message-${sessionId}">${lastestMessage}</div>`;
+                    `<div class="usercardname" id="userName-${roomId}">${userName}</div>
+                    <div class="usercardmessage" id="message-${roomId}">${lastestMessage}</div>`;
                 entry.addEventListener('click', (event) => {
-                    changeSession(userName, connection);
-                    console.log(`switch to session with user: ${userName}`);
+                    changeRoom(userName, connection);
+                    console.log(`switch to room with user: ${userName}`);
                 });
 
                 document.getElementById("userlist").appendChild(entry);
             }
 
-            const swapSessionCard = function (currentSession, newSession, targetName) {
+            const swapRoomCard = function (currentRoom, newRoom, targetName) {
 
-                const preSession = document.getElementById(currentSession);
-                preSession.style.backgroundColor = "#e0e0e0";
+                const preRoom = document.getElementById(currentRoom);
+                preRoom.style.backgroundColor = "#e0e0e0";
 
-                const curSession = document.getElementById(newSession);
-                curSession.style.backgroundColor = "#d0d0d0";
+                const curRoom = document.getElementById(newRoom);
+                curRoom.style.backgroundColor = "#d0d0d0";
                                 
-                document.getElementById('sessionLabel').innerText = targetName;
+                document.getElementById('roomLabel').innerText = targetName;
             }
 
-            const updateSessionCard = function (sessionId, lastestMessage) {
-                const elementId = 'message-' + sessionId;
-                const sessionCardElement = document.getElementById(elementId);
+            const updateRoomCard = function (roomId, lastestMessage) {
+                const elementId = 'message-' + roomId;
+                const roomCardElement = document.getElementById(elementId);
 
-                sessionCardElement.innerText = lastestMessage;
+                roomCardElement.innerText = lastestMessage;
             }
 
             const createNewMessage = function (sender, message, messageId, now) {
@@ -204,12 +204,12 @@
                     let messageEntry = createNewMessage(element.senderName,
                         encodedMessage(element.messageContent), cnt, webTime);
 
-                    if (currentSession != 'Public' && element.senderName != username) {
+                    if (currentRoom != 'Public' && element.senderName != username) {
                         if (element.messageStatus != 'Read') {
-                            connection.invoke('sendUserResponse', currentSession, cnt, element
+                            connection.invoke('sendUserResponse', currentRoom, cnt, element
                                 .senderName, 'Read');
                         }
-                    } else if (currentSession != 'Public' && element.senderName === username) {
+                    } else if (currentRoom != 'Public' && element.senderName === username) {
                         const messageStatusEntry = createNewMessageStatus(cnt, element.messageStatus);
                         messageEntry.appendChild(messageStatusEntry);
                     }
@@ -220,30 +220,30 @@
                 });
             }
 
-            const changeSession = async function (targetName, connection) {
+            const changeRoom = async function (targetName, connection) {
                 if (targetName === username) {
-                    alert('You cannot create a session with yourself!');
+                    alert('You cannot create a room with yourself!');
                     return;
                 }
 
-                //  Check if the session exists in local.
-                var sessionId;
+                //  Check if the room exists in local.
+                var roomId;
 
-                if (sessionMap.has(targetName)) {
-                    sessionId = sessionMap.get(targetName);
+                if (roomMap.has(targetName)) {
+                    roomId = roomMap.get(targetName);
                 } else {
-                    sessionId = await connection.invoke('getOrCreateSession', targetName);
-                    sessionMap.set(targetName, sessionId);
+                    roomId = await connection.invoke('getOrCreateRoom', targetName);
+                    roomMap.set(targetName, roomId);
 
-                    //  Add the sessionCard to the left side of the screen
-                    addNewSessionCard(targetName, sessionId, '');
+                    //  Add the roomCard to the left side of the screen
+                    addNewRoomCard(targetName, roomId, '');
                 }
 
-                swapSessionCard(currentSession, sessionId, targetName);
+                swapRoomCard(currentRoom, roomId, targetName);
 
-                currentSession = sessionId;
+                currentRoom = roomId;
                 currentUser = targetName;
-                const historyMessage = await connection.invoke('loadMessages', sessionId);;
+                const historyMessage = await connection.invoke('loadMessages', roomId);;
 
                 //  Add the history message to the screen
                 addHistoryMessage(historyMessage, connection);
@@ -254,7 +254,7 @@
                     return;
                 }
                 const messageId = generateGuid();
-                const sessionId = currentSession;
+                const roomId = currentRoom;
                 const targetName = currentUser;
 
                 //  Create the message in the window.
@@ -262,7 +262,7 @@
                 messageInput.value = '';
 
                 //  Currently we pull all messages from the server
-                await changeSession(currentUser, connection);
+                await changeRoom(currentUser, connection);
 
                 //  Create the message in the room.
                 const messageEntry = createNewMessage(username, messageText, messageId, '');
@@ -273,21 +273,21 @@
                 messageBoxElement.scrollTop = messageBoxElement.scrollHeight;
 
                 //  Call the sendUserMessage method on the hub.
-                const sequenceId = currentSession === 'Public'
+                const sequenceId = currentRoom === 'Public'
                     ? await connection.invoke('broadcastMessage', messageText)
-                    : await connection.invoke('sendUserMessage', sessionId, targetName, messageText);
+                    : await connection.invoke('sendUserMessage', roomId, targetName, messageText);
 
                 updateMessageStatus(messageId, 'Sent', sequenceId);
-                updateSessionCard(sessionId, messageText);
+                updateRoomCard(roomId, messageText);
             }
 
             const bindConnectionMessage = function (connection) {
-                const displayUnreadMessage = function (sessionId, sender, messageContent) {
-                    if (sessionMap.has(sender) || sessionId === 'Public') {
-                        updateSessionCard(sessionId, sender + ': ' + messageContent);
+                const displayUnreadMessage = function (roomId, sender, messageContent) {
+                    if (roomMap.has(sender) || roomId === 'Public') {
+                        updateRoomCard(roomId, sender + ': ' + messageContent);
                     } else {
-                        sessionMap.set(sender, sessionId);
-                        addNewSessionCard(sender, sessionId, sender + ': ' + messageContent);
+                        roomMap.set(sender, roomId);
+                        addNewRoomCard(sender, roomId, sender + ': ' + messageContent);
                     }
 
                     if (window.Notification && Notification.permission !== 'denied') {
@@ -300,14 +300,14 @@
                 }
 
                 //  Add the message to the screen
-                const displayUserMessage = function (sessionId, sequenceId, sender, messageContent) {
-                    if (currentSession != sessionId) {
-                        displayUnreadMessage(sessionId, sender, messageContent);
+                const displayUserMessage = function (roomId, sequenceId, sender, messageContent) {
+                    if (currentRoom != roomId) {
+                        displayUnreadMessage(roomId, sender, messageContent);
                         return;
                     }
 
-                    if (currentSession != 'Public') {
-                        connection.invoke('sendUserResponse', sessionId, sequenceId, sender, 'Read');
+                    if (currentRoom != 'Public') {
+                        connection.invoke('sendUserResponse', roomId, sequenceId, sender, 'Read');
                     }
 
                     const messageEntry = createNewMessage(sender, encodedMessage(messageContent),
@@ -316,25 +316,25 @@
                 };
 
                 //  Change the status text under the message
-                const displayResponseMessage = function (sessionId, sequenceId, messageStatus) {
-                    if (sessionId != currentSession) {
+                const displayResponseMessage = function (roomId, sequenceId, messageStatus) {
+                    if (roomId != currentRoom) {
                         return;
                     }
 
                     const now = new Date();
                     const entry = document.getElementById(sequenceId + '-Status');
                     entry.innerText = messageStatus;
-                    console.log('messageId: ' + sessionId + '\nStatus: ' + messageStatus +
+                    console.log('messageId: ' + roomId + '\nStatus: ' + messageStatus +
                         '\nLocal Time: ' + now.toLocaleTimeString());
                 }
 
-                //  Log all sessions
-                const updateSessions = function (sessions) {
-                    console.log(sessions);
-                    sessions.forEach(element => {
-                        if (!sessionMap.has(element.key)) {
-                            sessionMap.set(element.key, element.value.sessionId);
-                            addNewSessionCard(element.key, element.value.sessionId, '');
+                //  Log all rooms
+                const updateRooms = function (rooms) {
+                    console.log(rooms);
+                    rooms.forEach(element => {
+                        if (!roomMap.has(element.key)) {
+                            roomMap.set(element.key, element.value.roomId);
+                            addNewRoomCard(element.key, element.value.roomId, '');
                         }
                     })
                 }
@@ -342,7 +342,7 @@
                 //  Create a function that the hub can call to broadcast messages.
                 connection.on('displayResponseMessage', displayResponseMessage);
                 connection.on('displayUserMessage', displayUserMessage);
-                connection.on('updateSessions', updateSessions);
+                connection.on('updateRooms', updateRooms);
                 connection.onclose(onConnectionError);
             }
 
@@ -355,8 +355,8 @@
                     }
                 });
                 console.log('connection started');
-                addNewSessionCard('Public', 'Public', '');
-                changeSession('Public', connection);
+                addNewRoomCard('Public', 'Public', '');
+                changeRoom('Public', connection);
 
                 document.getElementById('userName').innerText = username;
 
@@ -373,7 +373,7 @@
                 document.getElementById('receiverName').addEventListener('keypress', function (event) {
                     if (event.keyCode === 13) {
                         event.preventDefault();
-                        changeSession(this.value, connection);
+                        changeRoom(this.value, connection);
                         this.value = '';
                         return false;
                     }

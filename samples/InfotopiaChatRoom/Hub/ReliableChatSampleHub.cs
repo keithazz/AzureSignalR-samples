@@ -13,14 +13,14 @@ namespace Microsoft.Azure.SignalR.Samples.InfotopiaChatRoom
     {
         private readonly IMessageHandler _messageHandler;
 
-        private readonly ISessionHandler _sessionHandler;
+        private readonly IRoomHandler _roomHandler;
 
         private readonly IUserHandler _userHandler;
 
-        public InfotopiaChatSampleHub(IMessageHandler messageHandler, ISessionHandler sessionHandler, IUserHandler userHandler)
+        public InfotopiaChatSampleHub(IMessageHandler messageHandler, IRoomHandler roomHandler, IUserHandler userHandler)
         {
             _messageHandler = messageHandler;
-            _sessionHandler = sessionHandler;
+            _roomHandler = roomHandler;
             _userHandler = userHandler;
         }
 
@@ -36,6 +36,39 @@ namespace Microsoft.Azure.SignalR.Samples.InfotopiaChatRoom
 
             await base.OnDisconnectedAsync(exception);
         }
+
+        public async Task<string> createPrivateChat()
+        {
+
+        }
+
+        
+        public async Task<string> createGroup()
+        {
+
+        }
+
+        public async Task leaveGroup()
+        {
+            
+        }
+
+        public async Task addUserToGroup()
+        {
+
+        }
+
+        public async Task removeUserFromGroup()
+        {
+
+        }
+
+        public async Task<string> sendMessage()
+        {
+
+        } 
+
+
 
 
 

@@ -13,7 +13,7 @@ Now the sample supports:
 
 ## Provision storage service for data
 
-We support the dependency injection (DI) software design pattern for the storage of messages and sessions.
+We support the dependency injection (DI) software design pattern for the storage of messages and rooms.
 
 ### Store the data in memory
 
@@ -24,7 +24,7 @@ You should register the service in the app's `Startup.ConfigureServices` method.
 public void ConfigureServices(IServiceCollection services)
 {
 	...
-	services.AddSingleton<ISessionHandler, InMemorySessionStorage>();
+	services.AddSingleton<IRoomHandler, InMemoryRoomStorage>();
 	services.AddSingleton<IMessageHandler, InMemoryMessageStorage>();
 }
 ```
@@ -33,13 +33,13 @@ public void ConfigureServices(IServiceCollection services)
 
 > If you don't have an Azure Storage Account, **[start now](https://azure.microsoft.com/en-us/services/storage/tables/)** to create one for your project.
 
-In `Startup.ConfigureServices` method, instead of registering `InMemorySessionStorage` and `InMemoryMessageStorage`, you need to use `AzureTableSessionStorage` and `AzureTableMessageStorage` and pass in connection string to make the application connect to the service.
+In `Startup.ConfigureServices` method, instead of registering `InMemoryRoomStorage` and `InMemoryMessageStorage`, you need to use `AzureTableRoomStorage` and `AzureTableMessageStorage` and pass in connection string to make the application connect to the service.
 
 ```cs
 public void ConfigureServices(IServiceCollection services)
 {
 	...
-	services.AddSingleton<ISessionHandler, AzureTableSessionStorage>();
+	services.AddSingleton<IRoomHandler, AzureTableRoomStorage>();
 	services.AddSingleton<IMessageHandler, AzureTableMessageStorage>();
 }
 ```
@@ -65,7 +65,7 @@ docker run -e Azure__SignalR__ConnectionString="<signalr-connection-string>" \
 
 ### Use your own database
 
-If you want to use your own database to store the messages and sessions, you should create a class which implements [ISessionHandler](./SessionHandler/ISessionHandler.cs) and another one implementing [IMessageHandler](./MessageHandler/IMessageHandler.cs).
+If you want to use your own database to store the messages and rooms, you should create a class which implements [IRoomHandler](./RoomHandler/IRoomHandler.cs) and another one implementing [IMessageHandler](./MessageHandler/IMessageHandler.cs).
 
 Then, register your services in `Startup.ConfigureServices` like above and run the app
 
