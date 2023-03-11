@@ -19,9 +19,10 @@ namespace Microsoft.Azure.SignalR.Samples.InfotopiaChatRoom
         /// Creates a new room and subscribes multiple members to it.
         /// Each member's membership should be described using a separate Room object
         /// </summary>
+        /// <param name="userIds"></param>
         /// <param name="roomMemberships"></param>
         /// <returns>the ID of the newly created room</returns>
-        Task<string> CreateRoom(List<Room> roomMemberships);
+        Task<string> CreateRoom(List<string> userIds,List<Room> roomMemberships);
 
         /// <summary>
         /// Subscribes a user to an existing group room

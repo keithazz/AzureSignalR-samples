@@ -21,6 +21,14 @@ namespace Microsoft.Azure.SignalR.Samples.InfotopiaChatRoom
         /// <param name="tenantId"></param>
         /// <param name="userId"></param>
         /// <param name="userStatus"></param>
-        Task SetUserStatus(string tenantId, string userId, string userStatus);
+        /// <param name="connectionId"></param>
+        Task SetUserStatus(string tenantId, string userId, string userStatus, string connectionId);
+
+        /// <summary>
+        /// Get the connection ID of a currently connected user, or empty string if offline
+        /// </summary>
+        /// <param name="tenantId"></param>
+        /// <param name="userId"></param>
+        Task<string> GetUserConnectionId(string tenantId, string userId);
     }
 }

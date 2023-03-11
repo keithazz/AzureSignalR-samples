@@ -10,10 +10,13 @@ namespace Microsoft.Azure.SignalR.Samples.InfotopiaChatRoom
         // "online" or "offline"
         public string UserStatus { get; set; }
 
-        public User(string userId, string userStatus)
+        public string ConnectionId { get; set; }
+
+        public User(string userId, string userStatus, string connectionId)
         {
             UserId = userId;
             UserStatus = userStatus;
+            ConnectionId = connectionId;
         }
 
     }

@@ -7,7 +7,7 @@ namespace Microsoft.Azure.SignalR.Samples.InfotopiaChatRoom
 {
     public class Message : IComparable<Message>
     {
-        public string SenderName { get; }
+        public string SenderId { get; }
 
         public DateTime SendTime { get; }
 
@@ -18,9 +18,9 @@ namespace Microsoft.Azure.SignalR.Samples.InfotopiaChatRoom
         //for now, "TextMessage" or "Information"
         public string MessageType { get; set; }
 
-        public Message(string senderName, DateTime sendTime, string messageContent, string messageStatus, string messageType)
+        public Message(string senderId, DateTime sendTime, string messageContent, string messageType)
         {
-            SenderName = senderName;
+            SenderId = senderId;
             SendTime = sendTime;
             MessageContent = messageContent;
             MessageType = messageType;

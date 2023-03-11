@@ -19,11 +19,12 @@ namespace Microsoft.Azure.SignalR.Samples.InfotopiaChatRoom
         // the name which will be shown to the user in the chat list
         public string DisplayName { get; set; }
 
-        public Room(string roomId, string lastReadSequenceId, string roomType, string displayName)
+        public Room(string roomId, string lastReadSequenceId, string roomType, string userRole, string displayName)
         {
             RoomId = roomId;
             RoomType = roomType;
             LastReadSequenceId = lastReadSequenceId;
+            UserRole = userRole;
             DisplayName = displayName;
         }
 
