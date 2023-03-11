@@ -8,6 +8,29 @@ namespace Microsoft.Azure.SignalR.Samples.InfotopiaChatRoom
 {
     public interface IMessageHandler
     {
+        /// <summary>
+        /// Add a new message to the storage.
+        /// </summary>
+        /// <param name="roomId"></param>
+        /// <param name="message"></param>
+        /// <returns>The sequenceId of the new message.</returns>
+        Task<string> AddNewMessageAsync(string roomId, Message message);
 
+        //TODO paginate
+        /// <summary>
+        /// Fetches the messages for a given room
+        /// </summary>
+        /// <param name="roomId"></param>
+        /// <param name="startSequenceId"></param>
+        /// <param name="endSequenceId"></param>
+        /// <returns>A list of messages sorted by the sequenceId</returns>
+        Task<List<Message>> GetRoomMessages(string roomId);
+
+        /// <summary>
+        /// Fetches the last message for each specified room
+        /// </summary>
+        /// <param name="roomIds"></param>
+        /// <returns>A dictionary of <room ID, message> pairs</returns>
+        Task<KeyValuePair<string,Message>> GetLastMessageOfEachRoom(List<string> roomIds);
     }
 }
