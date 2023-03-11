@@ -24,7 +24,7 @@ namespace Microsoft.Azure.SignalR.Samples.InfotopiaChatRoom
         Task<string> CreateRoom(List<Room> roomMemberships);
 
         /// <summary>
-        /// Subscribes a user to an existing room
+        /// Subscribes a user to an existing group room
         /// The member's membership should be described using a Room object
         /// </summary>
         /// <param name="userId"></param>
@@ -32,16 +32,14 @@ namespace Microsoft.Azure.SignalR.Samples.InfotopiaChatRoom
         Task AddUserToGroup(string userId, Room room);
 
         /// <summary>
-        /// Creates a new room and subscribes multiple members to it.
-        /// Each member's membership should be described using a separate Room object
+        /// removes a member from a group room entirely
         /// </summary>
         /// <param name="userId"></param>
         /// <param name="roomId"></param>
         Task RemoveUserFromGroup(string userId, string roomId);
 
         /// <summary>
-        /// Creates a new room and subscribes multiple members to it.
-        /// Each member's membership should be described using a separate Room object
+        /// Sets the user's last read message for the given room
         /// </summary>
         /// <param name="userId"></param>
         /// <param name="roomId"></param>
