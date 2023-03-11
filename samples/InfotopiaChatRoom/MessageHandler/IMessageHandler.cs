@@ -31,6 +31,6 @@ namespace Microsoft.Azure.SignalR.Samples.InfotopiaChatRoom
         /// </summary>
         /// <param name="roomIds"></param>
         /// <returns>A dictionary of <room ID, message> pairs</returns>
-        Task<KeyValuePair<string,Message>> GetLastMessageOfEachRoom(List<string> roomIds);
+        Task<Dictionary<string,Message>> GetLastMessageOfEachRoom(List<string> roomIds);
     }
 }

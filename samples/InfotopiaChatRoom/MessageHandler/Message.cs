@@ -15,11 +15,15 @@ namespace Microsoft.Azure.SignalR.Samples.InfotopiaChatRoom
 
         public string MessageContent { get; set; }
 
-        public Message(string senderName, DateTime sendTime, string messageContent, string messageStatus)
+        //for now, "TextMessage" or "Information"
+        public string MessageType { get; set; }
+
+        public Message(string senderName, DateTime sendTime, string messageContent, string messageStatus, string messageType)
         {
             SenderName = senderName;
             SendTime = sendTime;
             MessageContent = messageContent;
+            MessageType = messageType;
         }
 
         public int CompareTo(Message message)

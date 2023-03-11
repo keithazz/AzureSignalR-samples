@@ -37,38 +37,57 @@ namespace Microsoft.Azure.SignalR.Samples.InfotopiaChatRoom
             await base.OnDisconnectedAsync(exception);
         }
 
-        public async Task<string> createPrivateChat()
+        public async Task<string> CreatePrivateChatAsync(string firstUserId, string secondUserId)
         {
 
         }
 
         
-        public async Task<string> createGroup()
+        public async Task<string> CreateGroupAsync(List<string> adminUserIds, List<string> memberUserIds)
         {
 
         }
 
-        public async Task leaveGroup()
+        public async Task LeaveGroupAsync(string userId, roomId)
         {
             
         }
 
-        public async Task addUserToGroup()
+        public async Task AddUserToGroupAsync(string userId, string roomId, string roomName, string userRole)
         {
 
         }
 
-        public async Task removeUserFromGroup()
+        public async Task RemoveUserFromGroupAsync(string userId, string roomId)
         {
 
         }
 
-        public async Task<string> sendMessage()
+        public async Task<string> SendTextMessageAsync(string roomId, string senderId, string messageContent)
         {
 
         } 
 
+        public async Task MarkMessageAsReadAsync(string userId, string roomId, string sequenceId)
+        {
 
+        }
+
+        //returns a list of rooms and their last message, ordered chronologically
+        public async Task<List<KeyValuePair<Room,Message>>> GetChatPreviewsAsync(string userId)
+        {
+
+        }
+
+        public async Task<List<Message>> GetChatMessagesAsync(string userId, string roomId)
+        {
+
+        }
+
+        public async Task<List<User>> GetUsersWithStatusesAsync(string tenantId)
+        {
+
+        }
 
 
 
