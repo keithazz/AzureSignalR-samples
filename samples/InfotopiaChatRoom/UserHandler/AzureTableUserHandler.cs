@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Azure.SignalR.Samples.InfotopiaChatRoom
 {
-    public class AzureTableUserStorage : IRoomHandler
+    public class AzureTableUserStorage : IUserHandler
     {
     }
 }
