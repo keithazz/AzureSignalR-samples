@@ -75,7 +75,37 @@ namespace Microsoft.Azure.SignalR.Samples.InfotopiaChatRoom
         }
 
         public async Task SetLastReadMessage(string userId, string roomId, string sequenceId){
+            var retry = 0;
+            const int MAX_RETRY = 10;
 
+            while (retry < MAX_RETRY)
+            {
+                try
+                {
+                    var retrieveOperation = TableOperation.Retrieve<RoomEntity>(userId, roomId);
+                    var retrievedResult = await _roomTable.ExecuteAsync(retrieveOperation);
+                    var updateEntity = retrievedResult.Result as RoomEntity;
+
+                    if (updateEntity != null)
+                    {
+                        updateEntity.UpdateLastReadMessage(sequenceId);
+
+                        var updateOperation = TableOperation.Replace(updateEntity);
+                        await _roomTable.ExecuteAsync(updateOperation);
+                    }
+
+                    return;
+                }
+                catch (Exception ex)
+                {
+                    if (++retry == MAX_RETRY) 
+                    {
+                        throw ex;
+                    }
+
+                    await Task.Delay(new Random().Next(10, 100));
+                }
+            }
         }
     }
 }

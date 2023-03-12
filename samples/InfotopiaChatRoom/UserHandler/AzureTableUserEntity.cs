@@ -30,5 +30,10 @@ namespace Microsoft.Azure.SignalR.Samples.InfotopiaChatRoom
         public User ToUser() {
             return new User(RowKey, UserStatus, ConnectionId);
         }
+
+        public void UpdateStatus(string userStatus, string connectionId) {
+            UserStatus = userStatus;
+            ConnectionId = connectionId;
+        }
     }
 }

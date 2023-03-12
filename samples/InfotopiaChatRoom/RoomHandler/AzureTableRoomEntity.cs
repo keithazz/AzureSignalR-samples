@@ -44,5 +44,9 @@ namespace Microsoft.Azure.SignalR.Samples.InfotopiaChatRoom
         public Room ToRoom() {
             return new Room(RowKey,LastReadSequenceId,RoomType,UserRole,DisplayName);
         }
+
+        public void UpdateLastReadMessage(string sequenceId){
+            LastReadSequenceId = sequenceId;
+        }
     }
 }

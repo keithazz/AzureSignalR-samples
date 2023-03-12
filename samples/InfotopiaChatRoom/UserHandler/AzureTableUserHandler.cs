@@ -48,27 +48,60 @@ namespace Microsoft.Azure.SignalR.Samples.InfotopiaChatRoom
         }
 
         public async Task SetUserStatus(string tenantId, string userId, string userStatus, string connectionId){
+            var retry = 0;
+            const int MAX_RETRY = 10;
 
+            while (retry < MAX_RETRY)
+            {
+                try
+                {
+                    var retrieveOperation = TableOperation.Retrieve<UserEntity>(tenantId, userId);
+                    var retrievedResult = await _userTable.ExecuteAsync(retrieveOperation);
+                    var updateEntity = retrievedResult.Result as UserEntity;
+
+                    if (updateEntity != null)
+                    {
+                        updateEntity.UpdateStatus(userStatus, connectionId);
+
+                        var updateOperation = TableOperation.Replace(updateEntity);
+                        await _userTable.ExecuteAsync(updateOperation);
+                    }
+
+                    return;
+                }
+                catch (Exception ex)
+                {
+                    if (++retry == MAX_RETRY) 
+                    {
+                        throw ex;
+                    }
+
+                    await Task.Delay(new Random().Next(10, 100));
+                }
+            }
         }
 
         public async Task<string> GetUserConnectionId(string tenantId, string userId){
+            
+            //old code but leaving here as a reference for combining queries
             //https://stackoverflow.com/a/18549818
-            string pkFilter = TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, tenantId);
-            string rkFilter = TableQuery.GenerateFilterCondition("RowKey", QueryComparisons.Equal, tenantId);
-            string filter = TableQuery.CombineFilters(pkFilter, TableOperators.And, rkFilter);
-            var query = new TableQuery<UserEntity>().Where(filter);
-            var result = await _userTable.ExecuteQuerySegmentedAsync<UserEntity>(query, null);
+            //string pkFilter = TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, tenantId);
+            //string rkFilter = TableQuery.GenerateFilterCondition("RowKey", QueryComparisons.Equal, userId);
+            //string filter = TableQuery.CombineFilters(pkFilter, TableOperators.And, rkFilter);
+            //var query = new TableQuery<UserEntity>().Where(filter);
+            //var result = await _userTable.ExecuteQuerySegmentedAsync<UserEntity>(query, null);
             
             //there can be at most 1 result (PK and RK combo are guaranteed to be unique by design)
-            //if the user is not registered, this will throw an error, so we catch and return
-            //an empty string. If the used is offline, the database should contain an empty string too.
-            try
-            {
-                return result.ToList()[0].ConnectionId;
+            //if the user is not registered, we get null and return an empty string
+            //If the used is offline, the database should contain an empty string too.
+            var retrieveOperation = TableOperation.Retrieve<MessageEntity>(tenantId, userId);
+            var retrievedResult = await _userTable.ExecuteAsync(retrieveOperation);
+            var entity = retrievedResult.Result as UserEntity;
+            
+            if (entity!=null) {
+                return entity.ConnectionId;
             }
-            //TODO catch correct exception type
-            catch (Exception)
-            {
+            else {
                 return "";
             }
             
