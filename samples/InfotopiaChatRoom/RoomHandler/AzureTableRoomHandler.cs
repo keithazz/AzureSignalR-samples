@@ -32,23 +32,49 @@ namespace Microsoft.Azure.SignalR.Samples.InfotopiaChatRoom
             _roomTable.CreateIfNotExistsAsync();
         }
 
-        public Task<List<Room>> GetUserRooms(string userId){
+        public async Task<List<Room>> GetUserRooms(string userId){
 
+            var query = new TableQuery<RoomEntity>().Where(
+                TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, userId)
+            );
+            var result = await _roomTable.ExecuteQuerySegmentedAsync<RoomEntity>(query, null);
+
+            List<Room> rooms = new List<Room>();
+            foreach (var entity in result)
+            {
+                rooms.Add(entity.ToRoom());
+            }
+
+            return rooms;
         }
 
-        public Task<string> CreateRoom(List<string> userIds,List<Room> roomMemberships){
+        public async Task<string> CreateRoom(List<string> userIds,List<Room> roomMemberships){
+            //TODO this isn't really safe ... we can get clashes
+            string newRoomId = Guid.NewGuid().ToString();
 
+            for (int i = 0; i < userIds.Count; i++) 
+            {
+                RoomEntity entity = new RoomEntity(userIds[i], newRoomId, roomMemberships[i]);
+                TableOperation insertOperation = TableOperation.Insert(entity);
+                var task = await _roomTable.ExecuteAsync(insertOperation);//TODO batch instead of loop?
+            }
+
+            return newRoomId;
         }
 
-        public Task AddUserToGroup(string userId, Room room){
-
+        public async Task AddUserToGroup(string userId, Room room){
+            RoomEntity entity = new RoomEntity(userId, room.RoomId, room);
+            TableOperation insertOperation = TableOperation.Insert(entity);
+            await _roomTable.ExecuteAsync(insertOperation);
         }
 
-        public Task RemoveUserFromGroup(string userId, string roomId){
-
+        public async Task RemoveUserFromGroup(string userId, string roomId){
+            RoomEntity entity = new RoomEntity(userId, roomId);
+            TableOperation deleteOperation = TableOperation.Delete(entity);
+            await _roomTable.ExecuteAsync(deleteOperation);
         }
 
-        public Task SetLastReadMessage(string userId, string roomId, string sequenceId){
+        public async Task SetLastReadMessage(string userId, string roomId, string sequenceId){
 
         }
     }

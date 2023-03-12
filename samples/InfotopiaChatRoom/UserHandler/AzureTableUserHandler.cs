@@ -32,15 +32,45 @@ namespace Microsoft.Azure.SignalR.Samples.InfotopiaChatRoom
             _userTable.CreateIfNotExistsAsync();
         }
 
-        public Task<List<User>> GetUsers(string tenantId){
-            
+        public async Task<List<User>> GetUsers(string tenantId){
+            var query = new TableQuery<UserEntity>().Where(
+                TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, tenantId)
+            );
+            var result = await _userTable.ExecuteQuerySegmentedAsync<UserEntity>(query, null);
+
+            List<User> users = new List<User>();
+            foreach (var entity in result)
+            {
+                users.Add(entity.ToUser());
+            }
+
+            return users;
         }
 
-        public Task SetUserStatus(string tenantId, string userId, string userStatus, string connectionId){
-            
+        public async Task SetUserStatus(string tenantId, string userId, string userStatus, string connectionId){
+
         }
 
-        public Task<string> GetUserConnectionId(string tenantId, string userId){
+        public async Task<string> GetUserConnectionId(string tenantId, string userId){
+            //https://stackoverflow.com/a/18549818
+            string pkFilter = TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, tenantId);
+            string rkFilter = TableQuery.GenerateFilterCondition("RowKey", QueryComparisons.Equal, tenantId);
+            string filter = TableQuery.CombineFilters(pkFilter, TableOperators.And, rkFilter);
+            var query = new TableQuery<UserEntity>().Where(filter);
+            var result = await _userTable.ExecuteQuerySegmentedAsync<UserEntity>(query, null);
+            
+            //there can be at most 1 result (PK and RK combo are guaranteed to be unique by design)
+            //if the user is not registered, this will throw an error, so we catch and return
+            //an empty string. If the used is offline, the database should contain an empty string too.
+            try
+            {
+                return result.ToList()[0].ConnectionId;
+            }
+            //TODO catch correct exception type
+            catch (Exception)
+            {
+                return "";
+            }
             
         }
     }

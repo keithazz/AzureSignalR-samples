@@ -101,7 +101,7 @@ namespace Microsoft.Azure.SignalR.Samples.InfotopiaChatRoom
             await AddUserToHubGroupIfOnlineAsync(otherUserId, hubGroupName);
             await Clients.Group(hubGroupName).SendAsync("newRoom", _userId, newRoomId, "Private");
             Message message = new Message(_userId, DateTime.Now, _userId + " started the chat", "Information");
-            await _messageHandler.AddNewMessageAsync(newRoomId, message);
+            await _messageHandler.AddNewMessage(newRoomId, message);
             await Clients.Group(hubGroupName).SendAsync("newMessage", message);
 
             return newRoomId;
@@ -132,7 +132,7 @@ namespace Microsoft.Azure.SignalR.Samples.InfotopiaChatRoom
             }
             await Clients.Group(hubGroupName).SendAsync("newRoom", _userId, newRoomId, "Group");
             Message message = new Message(_userId, DateTime.Now, _userId + " created the group", "Information");
-            await _messageHandler.AddNewMessageAsync(newRoomId, message);
+            await _messageHandler.AddNewMessage(newRoomId, message);
             await Clients.Group(hubGroupName).SendAsync("newMessage", message);
 
             return newRoomId;
@@ -148,7 +148,7 @@ namespace Microsoft.Azure.SignalR.Samples.InfotopiaChatRoom
                                     DateTime.Now,
                                     _userId + " has left the group chat",
                                     "Information");
-            await _messageHandler.AddNewMessageAsync(roomId, message);
+            await _messageHandler.AddNewMessage(roomId, message);
             await Clients.Group(hubGroupName).SendAsync("NewMessage", message);
         }
 
@@ -164,7 +164,7 @@ namespace Microsoft.Azure.SignalR.Samples.InfotopiaChatRoom
                                     DateTime.Now,
                                     userId + " was added to the group chat",
                                     "Information");
-            await _messageHandler.AddNewMessageAsync(roomId, message);
+            await _messageHandler.AddNewMessage(roomId, message);
             await Clients.Group(hubGroupName).SendAsync("NewMessage", message);
         }
 
@@ -179,7 +179,7 @@ namespace Microsoft.Azure.SignalR.Samples.InfotopiaChatRoom
                                     DateTime.Now,
                                     userId + " was kicked from the group chat",
                                     "Information");
-            await _messageHandler.AddNewMessageAsync(roomId, message);
+            await _messageHandler.AddNewMessage(roomId, message);
             await Clients.Group(hubGroupName).SendAsync("NewMessage", message);
         }
 
@@ -187,7 +187,7 @@ namespace Microsoft.Azure.SignalR.Samples.InfotopiaChatRoom
         {
             Message message = new Message(_userId, DateTime.Now, messageContent, "Text");
             string hubGroupName = "room-"+roomId;
-            await _messageHandler.AddNewMessageAsync(roomId, message);
+            await _messageHandler.AddNewMessage(roomId, message);
             await Clients.Group(hubGroupName).SendAsync("NewMessage",message);
         } 
 

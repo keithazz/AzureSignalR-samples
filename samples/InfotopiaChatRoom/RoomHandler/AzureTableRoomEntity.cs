@@ -21,6 +21,14 @@ namespace Microsoft.Azure.SignalR.Samples.InfotopiaChatRoom
 
         // the name which will be shown to the user in the chat list
         public string DisplayName { get; set; }
+
+        public RoomEntity() {}
+
+        //use for deleting only
+        public RoomEntity(string pkey, string rkey) {
+            PartitionKey = pkey;
+            RowKey = rkey;
+        }
         
         //Partition Key: User ID
         //Row Key: Room ID

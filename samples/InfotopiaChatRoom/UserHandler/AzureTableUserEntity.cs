@@ -16,6 +16,8 @@ namespace Microsoft.Azure.SignalR.Samples.InfotopiaChatRoom
 
         public string ConnectionId { get; set; }
 
+        public UserEntity() {}
+
         //Partition Key: Tenant ID
         //Row Key: User ID
         public UserEntity(string pkey, string rkey, User user){

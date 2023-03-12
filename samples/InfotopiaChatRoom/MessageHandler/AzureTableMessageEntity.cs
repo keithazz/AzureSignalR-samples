@@ -18,6 +18,7 @@ namespace Microsoft.Azure.SignalR.Samples.InfotopiaChatRoom
         //for now, "TextMessage" or "Information"
         public string MessageType { get; set; }
 
+        public MessageEntity() {}
 
         //Partition Key: (Room ID)
         //Row Key: Sequence ID (Unix Timestamp)

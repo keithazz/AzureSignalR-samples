@@ -14,7 +14,7 @@ namespace Microsoft.Azure.SignalR.Samples.InfotopiaChatRoom
         /// <param name="roomId"></param>
         /// <param name="message"></param>
         /// <returns>The sequenceId of the new message.</returns>
-        Task<string> AddNewMessageAsync(string roomId, Message message);
+        Task<string> AddNewMessage(string roomId, Message message);
 
         //TODO paginate
         /// <summary>
