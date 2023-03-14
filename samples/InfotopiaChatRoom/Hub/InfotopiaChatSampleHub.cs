@@ -140,6 +140,7 @@ namespace Microsoft.Azure.SignalR.Samples.InfotopiaChatRoom
 
         public async Task LeaveGroupAsync(string roomId)
         {
+            //TODO check if the user is actually a member
             await _roomHandler.RemoveUserFromGroup(_userId, roomId);
             string hubGroupName = "room-"+roomId;
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, hubGroupName);
@@ -155,6 +156,7 @@ namespace Microsoft.Azure.SignalR.Samples.InfotopiaChatRoom
         public async Task AddUserToGroupAsync(string userId, string roomId, string roomName, string userRole)
         {
             //TODO ensure that user is an admin first
+            //TODO check that user being added is not already a member
             Room roomMembership = new Room(roomId, "0", "Group", userRole, roomName);
             await _roomHandler.AddUserToGroup(userId, roomMembership);
             string hubGroupName = "room-"+roomId;
@@ -171,6 +173,7 @@ namespace Microsoft.Azure.SignalR.Samples.InfotopiaChatRoom
         public async Task RemoveUserFromGroupAsync(string userId, string roomId)
         {
             //TODO ensure that user is an admin first
+            //TODO ensure that user being removed is in the chat in the first place
             await _roomHandler.RemoveUserFromGroup(userId, roomId);
             string hubGroupName = "room-"+roomId;
             await RemoveUserFromHubGroupIfOnlineAsync(userId, hubGroupName);
