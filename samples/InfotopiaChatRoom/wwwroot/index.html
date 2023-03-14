@@ -12,9 +12,18 @@
 </head>
 
 <body>
-    <h2 class="text-center" style="margin-top: 0; padding-top: 30px; padding-bottom: 30px;">
+    <h2 class="text-center" style="margin-top: 0; padding-top: 30px;">
         Infotopia Chat Demo
     </h2>
+    <div style="height: 100px; width: 60%; margin-left: 20%; display: flex; justify-content: space-evenly;">
+        <div style="width: 200px; display: flex; justify-content: center; align-items: center;">
+            <button style="width: 150px; height: 40px;" id="newPrivateChat">New Private Chat</button>
+        </div>
+
+        <div style="width: 200px; display: flex; justify-content: center; align-items: center;">
+            <button style="width: 150px; height: 40px;" id="newGroupChat">New Group Chat</button>
+        </div>
+    </div>
     <table style="height: calc(100% - 200px); width: 60%; margin-left: 20%; 
     table-layout:fixed">
         <tr>
@@ -37,7 +46,7 @@
                 </div>
             </td>
             <td>
-                <div id="roomLabel" class="roomlabel" style="height: 80px">Select a Room</div>
+                <div id="roomLabel" class="roomlabel" style="height: 80px; text-align: center;">Select a Room</div>
                 <div style="height:calc(100% - 80px);">
                     <div id="messages" style="background-color: whitesmoke;"></div>
                     <div style="width: 100%; border-left:1px solid #ccc; border-right:1px solid #ccc;">
@@ -99,7 +108,7 @@
                 if (!userId || userId.startsWith('_') || userId.indexOf('<') > -1 || userId.indexOf(
                     '>') > -1 || userId === 'Public') {
                     userId = '';
-                    promptMessage = 'Invalid input. Enter your name:';
+                    promptMessage = 'Invalid input. Enter your ID:';
                 }
             } while (!userId);
 
@@ -109,7 +118,7 @@
                 if (!tenantId || tenantId.startsWith('_') || tenantId.indexOf('<') > -1 || tenantId.indexOf(
                     '>') > -1 || tenantId === 'Public') {
                     tenantId = '';
-                    promptMessage = 'Invalid input. Enter your name:';
+                    promptMessage = 'Invalid input. Enter your tenant ID:';
                 }
             } while (!tenantId);
 
@@ -146,13 +155,69 @@
             //TODO trigger the function whenever the user is typing and presses Enter
 
 
-            //TODO add a function which listens for clicks on the "New Group Chat" button
-            //     1. show a dialog box to get the required info
-            //     2. create the group chat via the hub
+            //WIP add a function which listens for clicks on the "New Group Chat" button
+            //TODO swtich from free text to a selector
+            const createGroupChat = function () {
+                //     1. get the group chat name
+                let chatName = "";
+                promptMessage = "Enter the group chat name:";
+                do {
+                    chatName = prompt(promptMessage, chatName);
+                    if (!chatName || chatName.startsWith('_') || chatName.indexOf('<') > -1 || chatName.indexOf(
+                        '>') > -1 || chatName === 'Public') {
+                        chatName = '';
+                        promptMessage = 'Invalid input. Enter your ID:';
+                    }
+                } while (!chatName);
 
-            //TODO add a function which listens for clicks on the "New Private Chat" button
-            //     1. show a dialog box to get the required info
-            //     2. create the group chat via the hub
+                //     2. get the member list (assuming the current user will be the only admin)
+                let memberList = [];
+                let tempUserId = "";
+                promptMessage = "Enter the first member's ID:";
+                while(true) {
+                    tempUserId = prompt(promptMessage, tempUserId);
+                    if (!tempUserId) {
+                        break;
+                    }
+                    else if (tempUserId.startsWith('_') || tempUserId.indexOf('<') > -1 || tempUserId.indexOf(
+                        '>') > -1 || tempUserId === 'Public') {
+                        tempUserId = '';
+                        promptMessage = 'Invalid input. Enter a valid user ID:';
+                    }
+                    else {
+                        memberList.push(tempUserId)
+                        tempUserId = '';
+                        promptMessage = 'User Added. Enter another user ID or leave empty to stop:';
+                    }
+                }
+                console.log(`creating private chat ${chatName} with admin ${userId} and members: ${memberList}`);
+
+                //     2. create the group chat via the hub
+                //TODO
+            }
+            document.getElementById('newGroupChat').addEventListener('click', (event) => createGroupChat());
+
+            //WIP add a function which listens for clicks on the "New Private Chat" button
+            //TODO swtich from free text to a selector
+            const createPrivateChat = function () {
+                //     1. show a dialog box to get the required info
+                let otherUserId = "";
+                promptMessage = "Enter the other user's ID:";
+                do {
+                    otherUserId = prompt(promptMessage, otherUserId);
+                    if (!otherUserId || otherUserId.startsWith('_') || otherUserId.indexOf('<') > -1 || otherUserId.indexOf(
+                        '>') > -1 || otherUserId === 'Public') {
+                        otherUserId = '';
+                        promptMessage = 'Invalid input. Enter your ID:';
+                    }
+                } while (!otherUserId);
+                console.log(`creating private chat with ${otherUserId}`);
+
+                //     2. create the group chat via the hub
+                //TODO
+            }
+            document.getElementById('newPrivateChat').addEventListener('click', (event) => createPrivateChat());
+
 
             //TODO add a function which listens for clicks on the "Add User" button
             //     1. show a prompt box to get the user ID
