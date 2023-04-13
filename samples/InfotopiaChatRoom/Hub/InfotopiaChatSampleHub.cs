@@ -99,7 +99,7 @@ namespace Microsoft.Azure.SignalR.Samples.InfotopiaChatRoom
             string hubGroupName = "room-"+newRoomId;
             await Groups.AddToGroupAsync(Context.ConnectionId, hubGroupName);
             await AddUserToHubGroupIfOnlineAsync(otherUserId, hubGroupName);
-            await Clients.Group(hubGroupName).SendAsync("newRoom", _userId, newRoomId, "Private");
+            await Clients.Group(hubGroupName).SendAsync("NewRoom", _userId, newRoomId, "Private");
             Message message = new Message(_userId, DateTime.Now, _userId + " started the chat", "Information");
             await _messageHandler.AddNewMessage(newRoomId, message);
             await Clients.Group(hubGroupName).SendAsync("newMessage", message);
@@ -130,7 +130,7 @@ namespace Microsoft.Azure.SignalR.Samples.InfotopiaChatRoom
             {
                 await AddUserToHubGroupIfOnlineAsync(userId, hubGroupName);
             }
-            await Clients.Group(hubGroupName).SendAsync("newRoom", _userId, newRoomId, "Group");
+            await Clients.Group(hubGroupName).SendAsync("NewRoom", _userId, newRoomId, "Group");
             Message message = new Message(_userId, DateTime.Now, _userId + " created the group", "Information");
             await _messageHandler.AddNewMessage(newRoomId, message);
             await Clients.Group(hubGroupName).SendAsync("newMessage", message);

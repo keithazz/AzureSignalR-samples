@@ -131,22 +131,17 @@
             const messageInput = document.getElementById('message');
             messageInput.focus();
 
-            //TODO fetch the list of users & statuses
-            //TODO fetch user's room previews
-            //TODO populate the roomList div
-            //TODO      compute which chats have unread messages
-            //TODO      combine with user status data (for private chats)
-            //TODO auto-select the very first room?
+            //NOTE additional setup steps in onConnected function
 
-
-            //TODO add a function which listens for clicks on the room list
-            //when a user chooses a room:
-            //     1. get the list of messages for the chat from the hub
-            //     2. add the messages to the messages div
-            //     3. mark the last message in the room as read
-            //     4. if room is a group, show buttons to add/remove a new user
-            //     5. update "currentRoom"
-
+            // function to switch to a particular room
+            const switchToRoom = async function (connection, roomId) {
+                //TODO 1. get the list of messages for the chat from the hub
+                //TODO 2. add the messages to the messages div
+                //TODO 3. mark the last message in the room as read
+                //TODO 4. if room is a group, show buttons to add/remove a new user
+                //TODO 5. update "currentRoom"
+            }
+            
             // function to send messages
             const sendUserMessage = async function (connection) {
                 console.log(`sendUserMessage: called`);
@@ -161,26 +156,12 @@
 
                 //TODO do we need to manually add the outgoing message to the UI?
 
+                //send the message via the hub function
                 console.log(`sendUserMessage: ${currentUser} to ${currentRoom}:`);
                 console.log(`sendUserMessage: \t\t${messageText}`);
                 await connection.invoke('SendTextMessageAsync', currentRoom, currentUser, messageText);
                 console.log(`sendUserMessage: done`);
             }
-            //when a user wants to send a message:
-            //     1. grab the text & room info
-            //     2. send it via the hub
-            //     (do we need to update the UI, or will we get a hub message?)
-            //trigger the function whenever the "Send" button is pressed
-            document.getElementById('sendmessage').addEventListener('click', (event) => sendUserMessage(connection));
-            //trigger the function whenever the user is typing and presses Enter
-            document.getElementById('message').addEventListener('keypress', function (event) {
-                    if (event.keyCode === 13) {
-                        event.preventDefault();
-                        document.getElementById('sendmessage').click();
-                        return false;
-                    }
-                });
-
 
             //WIP add a function which listens for clicks on the "New Group Chat" button
             //TODO swtich from free text to a selector
@@ -225,7 +206,6 @@
 
                 console.log(`createGroupChat: done`);
             }
-            document.getElementById('newGroupChat').addEventListener('click', (event) => createGroupChat());
 
             //WIP add a function which listens for clicks on the "New Private Chat" button
             //TODO switch from free text to a selector
@@ -250,7 +230,6 @@
 
                 console.log(`createPrivateChat: done`);
             }
-            document.getElementById('newPrivateChat').addEventListener('click', (event) => createPrivateChat());
 
 
             //TODO add a function which listens for clicks on the "Add User" button
@@ -261,13 +240,98 @@
             //     1. show a prompt box to get the user ID
             //     2. remove from group chat via the hub
 
-            //TODO add a listener for NewMessage events
+            //TODO event handler for NewMessage events
+            const handleNewMessageEvent = function (messageObj) {
+                console.log(`handleNewMessage: called`);
+                console.log(`handleNewMessage: messageObj: ${messageObj}`);
+                console.log(`handleNewMessage: done`);
+            }
 
-            //TODO add a listener for NewRoom events
+            //TODO event handler for NewRoom events
+            const handleNewRoomEvent = function (senderId, roomId, roomType) {
+                console.log(`handleNewRoom: called`);
+                console.log(`handleNewRoom: senderId=${senderId}, roomId=${roomId}, roomType=${roomType}`);
+                console.log(`handleNewRoom: done`);
+            }
 
-            //TODO add a listener for NewReadReceipt events
+            //TODO event handler for NewReadReceipt events
+            const handleNewReadReceiptEvent = function (senderId, roomId, sequenceId) {
+                console.log(`handleNewReadReceipt: called`);
+                console.log(`handleNewReadReceipt: senderId=${senderId}, roomId=${roomId}, sequenceId=${sequenceId}`);
+                console.log(`handleNewReadReceipt: done`);
+            }
 
-            //TODO add a listener for NewStatusUpdate events
+            //TODO event handler for NewStatusUpdate events
+            const handleNewStatusUpdateEvent = function (senderId, status) {
+                console.log(`handleNewStatusUpdate: called`);
+                console.log(`handleNewStatusUpdate: senderId=${senderId}, status=${status}`);
+                console.log(`handleNewStatusUpdate: done`);
+            }
+
+            //master function which binds incoming events to their respective listeners
+            const bindConnectionMessage = function (connection) {
+
+                //  Create a function that the hub can call to broadcast messages.
+                connection.on('NewMessage', handleNewMessageEvent);
+                connection.on('NewRoom', handleNewRoomEvent);
+                connection.on('NewReadReceipt', handleNewReadReceiptEvent);
+                connection.on('NewStatusUpdate', handleNewStatusUpdateEvent);
+                connection.onclose(onConnectionError);
+            }
+
+            //handles setup steps upon connecting to SignalR, and adds various listeners for document elements
+            function onConnected(connection) {
+                //TODO fetch the list of users & statuses
+                //TODO fetch user's room previews
+                //TODO populate the roomList div
+                //TODO      compute which chats have unread messages
+                //TODO      combine with user status data (for private chats)
+                //TODO auto-select the very first room?
+
+                //add listeners for message sending functionality
+                //trigger the function whenever the "Send" button is pressed
+                document.getElementById('sendmessage').addEventListener('click', (event) => sendUserMessage(connection));
+                //trigger the function whenever the user is typing and presses Enter
+                document.getElementById('message').addEventListener('keypress', function (event) {
+                        if (event.keyCode === 13) {
+                            event.preventDefault();
+                            document.getElementById('sendmessage').click();
+                            return false;
+                        }
+                    });
+
+                // TODO add listeners for room switching functionality
+                // (call switchToRoom when one of the roomList items is clicked)
+
+                //listeners for room creation functionality
+                document.getElementById('newGroupChat').addEventListener('click', (event) => createGroupChat());
+                document.getElementById('newPrivateChat').addEventListener('click', (event) => createPrivateChat());
+
+                //TODO add listeners for adding & removing group chat users
+            }
+
+            function onConnectionError(error) {
+                if (error && error.message) {
+                    console.error(error.message);
+                }
+
+                const modal = document.getElementById('myModal');
+                modal.classList.add('in');
+                modal.style = 'display: block;';
+            }
+
+            const connection = new signalR.HubConnectionBuilder()
+                .withUrl(`/chat?username=${username}`)
+                .build();
+
+            bindConnectionMessage(connection);
+            connection.start()
+                .then(function () {
+                    onConnected(connection);
+                })
+                .catch(function (error) {
+                    console.error(error.message);
+                });
 
         });
     </script>
