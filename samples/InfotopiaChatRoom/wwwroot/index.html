@@ -84,8 +84,8 @@
             let roomMap = new Map([
                 ['Public', 'Public']
             ]);
-            let currentRoom = 'Public';
-            let currentUser = 'Public';
+            let currentRoom = '';
+            let currentUser = '';
 
             const generateGuid = function () {
                 return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
@@ -106,7 +106,7 @@
             do {
                 userId = prompt(promptMessage, userId);
                 if (!userId || userId.startsWith('_') || userId.indexOf('<') > -1 || userId.indexOf(
-                    '>') > -1 || userId === 'Public') {
+                    '>') > -1) {
                     userId = '';
                     promptMessage = 'Invalid input. Enter your ID:';
                 }
@@ -116,7 +116,7 @@
             do {
                 tenantId = prompt(promptMessage, tenantId);
                 if (!tenantId || tenantId.startsWith('_') || tenantId.indexOf('<') > -1 || tenantId.indexOf(
-                    '>') > -1 || tenantId === 'Public') {
+                    '>') > -1) {
                     tenantId = '';
                     promptMessage = 'Invalid input. Enter your tenant ID:';
                 }
@@ -124,7 +124,7 @@
 
             document.getElementById('userId').innerText = userId;
             document.getElementById('tenantId').innerText = tenantId;
-
+            currentUser = userId;
             //TODO make a call to the UpdateLoginInfo hub method
 
             //  Set initial focus to message input box.
@@ -145,26 +145,54 @@
             //     2. add the messages to the messages div
             //     3. mark the last message in the room as read
             //     4. if room is a group, show buttons to add/remove a new user
+            //     5. update "currentRoom"
 
-            //TODO add a function to send messages
+            // function to send messages
+            const sendUserMessage = async function (connection) {
+                console.log(`sendUserMessage: called`);
+                //don't do anything if the text box is empty
+                if (!messageInput.value) {
+                    return;
+                }
+
+                //fetch the message text (and reset the text box)
+                const messageText = messageInput.value;
+                messageInput.value = '';
+
+                //TODO do we need to manually add the outgoing message to the UI?
+
+                console.log(`sendUserMessage: ${currentUser} to ${currentRoom}:`);
+                console.log(`sendUserMessage: \t\t${messageText}`);
+                await connection.invoke('SendTextMessageAsync', currentRoom, currentUser, messageText);
+                console.log(`sendUserMessage: done`);
+            }
             //when a user wants to send a message:
             //     1. grab the text & room info
             //     2. send it via the hub
             //     (do we need to update the UI, or will we get a hub message?)
-            //TODO trigger the function whenever the "Send" button is pressed
-            //TODO trigger the function whenever the user is typing and presses Enter
+            //trigger the function whenever the "Send" button is pressed
+            document.getElementById('sendmessage').addEventListener('click', (event) => sendUserMessage(connection));
+            //trigger the function whenever the user is typing and presses Enter
+            document.getElementById('message').addEventListener('keypress', function (event) {
+                    if (event.keyCode === 13) {
+                        event.preventDefault();
+                        document.getElementById('sendmessage').click();
+                        return false;
+                    }
+                });
 
 
             //WIP add a function which listens for clicks on the "New Group Chat" button
             //TODO swtich from free text to a selector
             const createGroupChat = function () {
+                console.log(`createGroupChat: called`);
                 //     1. get the group chat name
                 let chatName = "";
                 promptMessage = "Enter the group chat name:";
                 do {
                     chatName = prompt(promptMessage, chatName);
                     if (!chatName || chatName.startsWith('_') || chatName.indexOf('<') > -1 || chatName.indexOf(
-                        '>') > -1 || chatName === 'Public') {
+                        '>') > -1) {
                         chatName = '';
                         promptMessage = 'Invalid input. Enter your ID:';
                     }
@@ -180,7 +208,7 @@
                         break;
                     }
                     else if (tempUserId.startsWith('_') || tempUserId.indexOf('<') > -1 || tempUserId.indexOf(
-                        '>') > -1 || tempUserId === 'Public') {
+                        '>') > -1) {
                         tempUserId = '';
                         promptMessage = 'Invalid input. Enter a valid user ID:';
                     }
@@ -194,19 +222,23 @@
 
                 //     2. create the group chat via the hub
                 //TODO
+
+                console.log(`createGroupChat: done`);
             }
             document.getElementById('newGroupChat').addEventListener('click', (event) => createGroupChat());
 
             //WIP add a function which listens for clicks on the "New Private Chat" button
-            //TODO swtich from free text to a selector
+            //TODO switch from free text to a selector
             const createPrivateChat = function () {
+                console.log(`createPrivateChat: called`);
+
                 //     1. show a dialog box to get the required info
                 let otherUserId = "";
                 promptMessage = "Enter the other user's ID:";
                 do {
                     otherUserId = prompt(promptMessage, otherUserId);
                     if (!otherUserId || otherUserId.startsWith('_') || otherUserId.indexOf('<') > -1 || otherUserId.indexOf(
-                        '>') > -1 || otherUserId === 'Public') {
+                        '>') > -1) {
                         otherUserId = '';
                         promptMessage = 'Invalid input. Enter your ID:';
                     }
@@ -215,6 +247,8 @@
 
                 //     2. create the group chat via the hub
                 //TODO
+
+                console.log(`createPrivateChat: done`);
             }
             document.getElementById('newPrivateChat').addEventListener('click', (event) => createPrivateChat());
 
