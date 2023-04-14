@@ -87,6 +87,8 @@
             let currentRoom = '';
             let currentUser = '';
             let currentTenant = '';
+            //the list of users with statuses;
+            var userList = [];
 
             const generateGuid = function () {
                 return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
@@ -267,6 +269,19 @@
             const handleNewStatusUpdateEvent = function (senderId, status) {
                 console.log(`handleNewStatusUpdate: called`);
                 console.log(`handleNewStatusUpdate: senderId=${senderId}, status=${status}`);
+                //update the status in the userList
+                //TODO a bit dirty since we're leaving the connectionId as is, but it's not used
+                const idx = userList.findIndex((obj) => obj.userId == senderId);
+                console.log(idx)
+                if (idx>-1) {
+                    userList[idx].userStatus = status;
+                }
+                else {
+                    //TODO just remove all references to connectionId in here
+                    userList.push({userId: senderId, userStatus: status, connectionId: ''})
+                }
+                
+                console.log(userList);
                 console.log(`handleNewStatusUpdate: done`);
             }
 
@@ -282,8 +297,11 @@
             }
 
             //handles setup steps upon connecting to SignalR, and adds various listeners for document elements
-            function onConnected(connection) {
+            async function onConnected(connection) {
                 //TODO fetch the list of users & statuses
+                userList = await connection.invoke('getUsersWithStatusesAsync');
+                console.log(userList);
+
                 //TODO fetch user's room previews
                 //TODO populate the roomList div
                 //TODO      compute which chats have unread messages
