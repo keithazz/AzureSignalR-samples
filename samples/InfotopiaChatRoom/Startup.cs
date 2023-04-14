@@ -34,6 +34,7 @@ namespace Microsoft.Azure.SignalR.Samples.InfotopiaChatRoom
 
             services.AddSingleton<IRoomHandler, AzureTableRoomStorage>();
             services.AddSingleton<IMessageHandler, AzureTableMessageStorage>();
+            services.AddSingleton<IUserHandler, AzureTableUserStorage>();
         }
 
         public void Configure(IApplicationBuilder app)

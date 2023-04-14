@@ -86,6 +86,7 @@
             ]);
             let currentRoom = '';
             let currentUser = '';
+            let currentTenant = '';
 
             const generateGuid = function () {
                 return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
@@ -125,6 +126,7 @@
             document.getElementById('userId').innerText = userId;
             document.getElementById('tenantId').innerText = tenantId;
             currentUser = userId;
+            currentTenant = tenantId;
             //TODO make a call to the UpdateLoginInfo hub method
 
             //  Set initial focus to message input box.
@@ -321,7 +323,7 @@
             }
 
             const connection = new signalR.HubConnectionBuilder()
-                .withUrl(`/chat?username=${username}`)
+                .withUrl(`/chat?username=${currentUser}-${currentTenant}`)
                 .build();
 
             bindConnectionMessage(connection);

@@ -18,25 +18,27 @@ namespace Microsoft.Azure.SignalR.Samples.InfotopiaChatRoom
 
         private readonly IUserHandler _userHandler;
 
-        //TODO would these actually be saved on a per-user basis, or be shared across users?
-        //we should probably use Context Items instead
+        //TODO this might not be the best way of doing things, but we combine the tenant and user ID
+        //maybe look into context items instead
         //https://learn.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.signalr.hubconnectioncontext.items?view=aspnetcore-7.0
-        private string _userId;
-        private string _tenantId;
+        private string getUserId(){
+            return Context.UserIdentifier.Split('-')[0];
+        }
+        private string getTenantId(){
+            return Context.UserIdentifier.Split('-')[1];
+        }
 
         public InfotopiaChatSampleHub(IMessageHandler messageHandler, IRoomHandler roomHandler, IUserHandler userHandler)
         {
             _messageHandler = messageHandler;
             _roomHandler = roomHandler;
             _userHandler = userHandler;
-            _userId = "";
-            _tenantId = "";
         }
 
         //use to add a user to a room group if they're online, or skip if they're offline
         private async Task AddUserToHubGroupIfOnlineAsync(string userId, string hubGroupName)
         {
-            string connection = await _userHandler.GetUserConnectionId(_tenantId, userId);
+            string connection = await _userHandler.GetUserConnectionId(getTenantId(), userId);
             //an empty string indicates that the user is not online
             if (connection!="") {
                 await Groups.AddToGroupAsync(connection, hubGroupName);
@@ -46,7 +48,7 @@ namespace Microsoft.Azure.SignalR.Samples.InfotopiaChatRoom
 
         private async Task RemoveUserFromHubGroupIfOnlineAsync(string userId, string hubGroupName)
         {
-            string connection = await _userHandler.GetUserConnectionId(_tenantId, userId);
+            string connection = await _userHandler.GetUserConnectionId(getTenantId(), userId);
             //an empty string indicates that the user is not online
             if (connection!="") {
                 await Groups.RemoveFromGroupAsync(connection, hubGroupName);
@@ -56,14 +58,18 @@ namespace Microsoft.Azure.SignalR.Samples.InfotopiaChatRoom
 
         public override async Task OnConnectedAsync()
         {
-            await _userHandler.SetUserStatus(_tenantId, _userId, "Online", Context.ConnectionId);
-            string hubGroupName = "tenant-"+_tenantId;
+            //IDictionary<object,object> it = Context.Items;
+            //Console.WriteLine("Context.Items={0}",Context.Items.Keys);
+            Console.WriteLine("----> UserIdentifier={0}",Context.UserIdentifier);
+            Console.WriteLine("----> userId={0}, tenantId={1}",getUserId(), getTenantId());
+            await _userHandler.SetUserStatus(getTenantId(), getUserId(), "Online", Context.ConnectionId);
+            string hubGroupName = "tenant-"+getTenantId();
             await Groups.AddToGroupAsync(Context.ConnectionId,hubGroupName);
-            await Clients.Group(hubGroupName).SendAsync("NewStatusUpdate", _userId, "Online");
+            await Clients.Group(hubGroupName).SendAsync("NewStatusUpdate", getUserId(), "Online");
             
             
             //fetch the user's rooms, and subscribe to them
-            List<Room> rooms = await _roomHandler.GetUserRooms(_userId);
+            List<Room> rooms = await _roomHandler.GetUserRooms(getUserId());
             foreach(var room in rooms) {
                 await Groups.AddToGroupAsync(Context.ConnectionId, "room-"+room.RoomId);
             }
@@ -73,34 +79,29 @@ namespace Microsoft.Azure.SignalR.Samples.InfotopiaChatRoom
 
         public override async Task OnDisconnectedAsync(Exception exception)
         {
-            await _userHandler.SetUserStatus(_tenantId, _userId, "Offline", "");
-            string hubGroupName = "tenant-"+_tenantId;
+            await _userHandler.SetUserStatus(getTenantId(), getUserId(), "Offline", "");
+            string hubGroupName = "tenant-"+getTenantId();
             await Groups.RemoveFromGroupAsync(Context.ConnectionId,hubGroupName);
-            await Clients.Group(hubGroupName).SendAsync("NewStatusUpdate", _userId, "Offline");
+            await Clients.Group(hubGroupName).SendAsync("NewStatusUpdate", getUserId(), "Offline");
 
             await base.OnDisconnectedAsync(exception);
         }
 
-        public void UpdateLoginInfo(string userId, string tenantId)
-        {
-            _userId = userId;
-            _tenantId = tenantId;
-        }
 
-        public async Task<string> CreatePrivateChatAsync(string _userId, string otherUserId)
+        public async Task<string> CreatePrivateChatAsync(string userId, string otherUserId)
         {
-            List<string> ids = new List<string>(){ _userId, otherUserId};
+            List<string> ids = new List<string>(){ userId, otherUserId};
             List<Room> memberships = new List<Room>(){
                 new Room("", "0", "Private", "Admin", otherUserId),
-                new Room("", "0", "Private", "Admin", _userId), 
+                new Room("", "0", "Private", "Admin", userId), 
             };
 
             string newRoomId = await _roomHandler.CreateRoom(ids, memberships);
             string hubGroupName = "room-"+newRoomId;
             await Groups.AddToGroupAsync(Context.ConnectionId, hubGroupName);
             await AddUserToHubGroupIfOnlineAsync(otherUserId, hubGroupName);
-            await Clients.Group(hubGroupName).SendAsync("NewRoom", _userId, newRoomId, "Private");
-            Message message = new Message(_userId, DateTime.Now, _userId + " started the chat", "Information");
+            await Clients.Group(hubGroupName).SendAsync("NewRoom", userId, newRoomId, "Private");
+            Message message = new Message(userId, DateTime.Now, userId + " started the chat", "Information");
             await _messageHandler.AddNewMessage(newRoomId, message);
             await Clients.Group(hubGroupName).SendAsync("newMessage", message);
 
@@ -130,8 +131,8 @@ namespace Microsoft.Azure.SignalR.Samples.InfotopiaChatRoom
             {
                 await AddUserToHubGroupIfOnlineAsync(userId, hubGroupName);
             }
-            await Clients.Group(hubGroupName).SendAsync("NewRoom", _userId, newRoomId, "Group");
-            Message message = new Message(_userId, DateTime.Now, _userId + " created the group", "Information");
+            await Clients.Group(hubGroupName).SendAsync("NewRoom", getUserId(), newRoomId, "Group");
+            Message message = new Message(getUserId(), DateTime.Now, getUserId() + " created the group", "Information");
             await _messageHandler.AddNewMessage(newRoomId, message);
             await Clients.Group(hubGroupName).SendAsync("newMessage", message);
 
@@ -141,13 +142,13 @@ namespace Microsoft.Azure.SignalR.Samples.InfotopiaChatRoom
         public async Task LeaveGroupAsync(string roomId)
         {
             //TODO check if the user is actually a member
-            await _roomHandler.RemoveUserFromGroup(_userId, roomId);
+            await _roomHandler.RemoveUserFromGroup(getUserId(), roomId);
             string hubGroupName = "room-"+roomId;
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, hubGroupName);
             Message message = new Message(
-                                    _userId,
+                                    getUserId(),
                                     DateTime.Now,
-                                    _userId + " has left the group chat",
+                                    getUserId() + " has left the group chat",
                                     "Information");
             await _messageHandler.AddNewMessage(roomId, message);
             await Clients.Group(hubGroupName).SendAsync("NewMessage", message);
@@ -162,7 +163,7 @@ namespace Microsoft.Azure.SignalR.Samples.InfotopiaChatRoom
             string hubGroupName = "room-"+roomId;
             await AddUserToHubGroupIfOnlineAsync(userId, hubGroupName);
             Message message = new Message(
-                                    _userId,
+                                    getUserId(),
                                     DateTime.Now,
                                     userId + " was added to the group chat",
                                     "Information");
@@ -178,7 +179,7 @@ namespace Microsoft.Azure.SignalR.Samples.InfotopiaChatRoom
             string hubGroupName = "room-"+roomId;
             await RemoveUserFromHubGroupIfOnlineAsync(userId, hubGroupName);
             Message message = new Message(
-                                    _userId,
+                                    getUserId(),
                                     DateTime.Now,
                                     userId + " was kicked from the group chat",
                                     "Information");
@@ -188,7 +189,7 @@ namespace Microsoft.Azure.SignalR.Samples.InfotopiaChatRoom
 
         public async Task SendTextMessageAsync(string roomId, string senderId, string messageContent)
         {
-            Message message = new Message(_userId, DateTime.Now, messageContent, "Text");
+            Message message = new Message(getUserId(), DateTime.Now, messageContent, "Text");
             string hubGroupName = "room-"+roomId;
             await _messageHandler.AddNewMessage(roomId, message);
             await Clients.Group(hubGroupName).SendAsync("NewMessage",message);
@@ -197,17 +198,17 @@ namespace Microsoft.Azure.SignalR.Samples.InfotopiaChatRoom
         public async Task MarkMessageAsReadAsync(string roomId, string sequenceId)
         {
             //update the last read message in the DB
-            await _roomHandler.SetLastReadMessage(_userId, roomId, sequenceId);
+            await _roomHandler.SetLastReadMessage(getUserId(), roomId, sequenceId);
             //inform users in the same room that the message has been read
             string hubGroupName = "room-"+roomId;
-            await Clients.Group(hubGroupName).SendAsync("NewReadReceipt",_userId, roomId, sequenceId);
+            await Clients.Group(hubGroupName).SendAsync("NewReadReceipt",getUserId(), roomId, sequenceId);
         }
 
         //returns a list of rooms and their last message, ordered chronologically
         public async Task<List<KeyValuePair<Room,Message>>> GetChatPreviewsAsync(string userId)
         {
             //fetch the list of rooms that a user is part of
-            List<Room> rooms = await _roomHandler.GetUserRooms(_userId);
+            List<Room> rooms = await _roomHandler.GetUserRooms(getUserId());
 
             //fetch the last message for each room
             List<string> roomIds = rooms.Select(x => x.RoomId).ToList();
@@ -235,7 +236,7 @@ namespace Microsoft.Azure.SignalR.Samples.InfotopiaChatRoom
 
         public async Task<List<User>> GetUsersWithStatusesAsync()
         {
-            List<User> users = await _userHandler.GetUsers(_tenantId);
+            List<User> users = await _userHandler.GetUsers(getTenantId());
             return users;
         }
 

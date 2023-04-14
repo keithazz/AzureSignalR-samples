@@ -48,23 +48,34 @@ namespace Microsoft.Azure.SignalR.Samples.InfotopiaChatRoom
         }
 
         public async Task SetUserStatus(string tenantId, string userId, string userStatus, string connectionId){
+            Console.WriteLine("----> SetUserStatus called");
             var retry = 0;
             const int MAX_RETRY = 10;
 
             while (retry < MAX_RETRY)
             {
+                Console.WriteLine("----> SetUserStatus retry {0}",retry);
                 try
                 {
                     var retrieveOperation = TableOperation.Retrieve<UserEntity>(tenantId, userId);
                     var retrievedResult = await _userTable.ExecuteAsync(retrieveOperation);
                     var updateEntity = retrievedResult.Result as UserEntity;
 
-                    if (updateEntity != null)
+                    if (updateEntity != null)//user already listed, we need to update
                     {
+                        Console.WriteLine("----> SetUserStatus updating entry");
                         updateEntity.UpdateStatus(userStatus, connectionId);
 
                         var updateOperation = TableOperation.Replace(updateEntity);
                         await _userTable.ExecuteAsync(updateOperation);
+                    }
+                    else { //add a new user to the list
+                        Console.WriteLine("----> SetUserStatus creating new entry");
+                        var user = new User(userId, userStatus, connectionId);
+                        var insertEntity = new UserEntity(tenantId, userId, user);
+
+                        var insertOperation = TableOperation.Insert(insertEntity);
+                        await _userTable.ExecuteAsync(insertOperation);
                     }
 
                     return;
@@ -79,6 +90,7 @@ namespace Microsoft.Azure.SignalR.Samples.InfotopiaChatRoom
                     await Task.Delay(new Random().Next(10, 100));
                 }
             }
+            Console.WriteLine("----> SetUserStatus done");
         }
 
         public async Task<string> GetUserConnectionId(string tenantId, string userId){
