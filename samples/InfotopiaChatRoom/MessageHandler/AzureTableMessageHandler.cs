@@ -27,7 +27,7 @@ namespace Microsoft.Azure.SignalR.Samples.InfotopiaChatRoom
 
             _cloudTableClient = _storageAccount.CreateCloudTableClient();
 
-            _messageTable = _cloudTableClient.GetTableReference("MessageTable");
+            _messageTable = _cloudTableClient.GetTableReference("TestMessageTable");
             _messageTable.CreateIfNotExistsAsync();
         }
 

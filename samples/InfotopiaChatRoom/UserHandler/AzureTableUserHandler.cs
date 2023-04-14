@@ -28,7 +28,7 @@ namespace Microsoft.Azure.SignalR.Samples.InfotopiaChatRoom
 
             _cloudTableClient = _storageAccount.CreateCloudTableClient();
 
-            _userTable = _cloudTableClient.GetTableReference("UserTable");
+            _userTable = _cloudTableClient.GetTableReference("TestUserTable");
             _userTable.CreateIfNotExistsAsync();
         }
 
