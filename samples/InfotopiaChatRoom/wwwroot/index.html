@@ -89,6 +89,7 @@
             let currentTenant = '';
             //the list of users with statuses;
             var userList = [];
+            var roomPreviewList = [];
 
             const generateGuid = function () {
                 return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
@@ -244,16 +245,43 @@
             //     2. remove from group chat via the hub
 
             //TODO event handler for NewMessage events
-            const handleNewMessageEvent = function (messageObj) {
+            const handleNewMessageEvent = function (roomId, messageObj) {
                 console.log(`handleNewMessage: called`);
-                console.log(`handleNewMessage: messageObj: ${messageObj.toString()}`);
+                console.log(messageObj);
+                //TODO handle the case where the user has the chat in question opened
+                //TODO figure out why sequenceId is null
+                previewIndex = roomPreviewList.findIndex((obj => obj.roomId == roomId));
+                roomPreviewList[previewIndex].lastMessageSequenceId = messageObj.sequenceId;
+                roomPreviewList[previewIndex].lastMessageSenderId = messageObj.senderId;
+                roomPreviewList[previewIndex].lastMessageType = messageObj.messageType;
+                roomPreviewList[previewIndex].lastMessageContent = messageObj.messageContent;
+                roomPreviewList[previewIndex].hasUnreadMessages = true;
+                console.log(roomPreviewList);
+                //TODO refresh the list of chat previews in the UI
                 console.log(`handleNewMessage: done`);
             }
 
             //TODO event handler for NewRoom events
-            const handleNewRoomEvent = function (senderId, roomId, roomType) {
+            const handleNewRoomEvent = function (senderId, roomId, roomName, roomType) {
                 console.log(`handleNewRoom: called`);
                 console.log(`handleNewRoom: senderId=${senderId}, roomId=${roomId}, roomType=${roomType}`);
+                //add the new chat to the list of room previews
+                //we are making up the content of the first message, but it should be fine as the 
+                //new room event is always immediately followed by a new message event
+                roomPreviewList.push({
+                        roomId: roomId,
+                        displayName: roomName,
+                        roomType: roomType,
+                        lastReadSequenceId: 0,
+                        lastMessageSequenceId: 1,
+                        hasUnreadMessages: true,
+                        lastMessageSenderId: senderId,
+                        lastMessageType: "Information",
+                        lastMessageContent: "New Chat!",
+                        //TODO message time?
+                });
+                console.log(roomPreviewList);
+                //TODO refresh the list of chat previews in the UI
                 console.log(`handleNewRoom: done`);
             }
 
@@ -296,6 +324,24 @@
                 console.log(userList);
 
                 //TODO fetch user's room previews
+                roomPreviewsRaw = await connection.invoke('getChatPreviewsAsync');
+                roomPreviewList = roomPreviewsRaw.map((roomMessagePair) => {
+                    return {
+                        roomId: roomMessagePair.key.roomId,
+                        displayName: roomMessagePair.key.displayName,
+                        //TODO do we care about the user role here?
+                        //userRole: roomMessagePair.key.userRole,
+                        roomType: roomMessagePair.key.roomType,
+                        lastReadSequenceId: roomMessagePair.key.lastReadSequenceId,
+                        lastMessageSequenceId: roomMessagePair.value.sequenceId,
+                        hasUnreadMessages: roomMessagePair.value.sequenceId > roomMessagePair.key.lastReadSequenceId,
+                        lastMessageSenderId: roomMessagePair.value.senderId,
+                        lastMessageType: roomMessagePair.value.messageType,
+                        lastMessageContent: roomMessagePair.value.messageContent,
+                    };
+                });
+                console.log(roomPreviewList);
+
                 //TODO populate the roomList div
                 //TODO      compute which chats have unread messages
                 //TODO      combine with user status data (for private chats)
