@@ -59,18 +59,18 @@ textarea:focus {
     border-right-style:1px solid #ccc;
 }
 
-.usercard {
+.roomcard {
     height: 60px;
     border-bottom: 1px solid #ccc;
 }
 
-.currentusercard {
+.currentroomcard {
     height: 60px;
     border-bottom: 1px solid #ccc;
     background-color: #d0d0d0;
 }
 
-.usercardname {
+.roomcardname {
     text-overflow: ellipsis;
     white-space: nowrap;
     overflow: hidden;
@@ -79,7 +79,7 @@ textarea:focus {
     color: #606060;
 }
 
-.usercardmessage {
+.roomcardmessage {
     text-overflow: ellipsis;
     white-space: nowrap;
     overflow: hidden;
