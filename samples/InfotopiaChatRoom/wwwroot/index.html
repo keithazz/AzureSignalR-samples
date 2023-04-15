@@ -163,7 +163,7 @@
                 //send the message via the hub function
                 console.log(`sendUserMessage: ${currentUser} to ${currentRoom}:`);
                 console.log(`sendUserMessage: \t\t${messageText}`);
-                await connection.invoke('SendTextMessageAsync', currentRoom, currentUser, messageText);
+                await connection.invoke('sendTextMessageAsync', currentRoom, currentUser, messageText);
                 console.log(`sendUserMessage: done`);
             }
 
@@ -213,8 +213,7 @@
 
             //WIP add a function which listens for clicks on the "New Private Chat" button
             //TODO switch from free text to a selector
-            const createPrivateChat = function () {
-                console.log(`createPrivateChat: called`);
+            const createPrivateChat = async function () {
 
                 //     1. show a dialog box to get the required info
                 let otherUserId = "";
@@ -230,9 +229,9 @@
                 console.log(`creating private chat with ${otherUserId}`);
 
                 //     2. create the group chat via the hub
-                //TODO
+                //TODO make use of the room ID?
+                const roomId = await connection.invoke('createPrivateChatAsync', currentUser, otherUserId);
 
-                console.log(`createPrivateChat: done`);
             }
 
 
@@ -247,7 +246,7 @@
             //TODO event handler for NewMessage events
             const handleNewMessageEvent = function (messageObj) {
                 console.log(`handleNewMessage: called`);
-                console.log(`handleNewMessage: messageObj: ${messageObj}`);
+                console.log(`handleNewMessage: messageObj: ${messageObj.toString()}`);
                 console.log(`handleNewMessage: done`);
             }
 
@@ -267,12 +266,10 @@
 
             //TODO event handler for NewStatusUpdate events
             const handleNewStatusUpdateEvent = function (senderId, status) {
-                console.log(`handleNewStatusUpdate: called`);
                 console.log(`handleNewStatusUpdate: senderId=${senderId}, status=${status}`);
                 //update the status in the userList
                 //TODO a bit dirty since we're leaving the connectionId as is, but it's not used
                 const idx = userList.findIndex((obj) => obj.userId == senderId);
-                console.log(idx)
                 if (idx>-1) {
                     userList[idx].userStatus = status;
                 }
@@ -280,9 +277,6 @@
                     //TODO just remove all references to connectionId in here
                     userList.push({userId: senderId, userStatus: status, connectionId: ''})
                 }
-                
-                console.log(userList);
-                console.log(`handleNewStatusUpdate: done`);
             }
 
             //master function which binds incoming events to their respective listeners
@@ -298,7 +292,6 @@
 
             //handles setup steps upon connecting to SignalR, and adds various listeners for document elements
             async function onConnected(connection) {
-                //TODO fetch the list of users & statuses
                 userList = await connection.invoke('getUsersWithStatusesAsync');
                 console.log(userList);
 

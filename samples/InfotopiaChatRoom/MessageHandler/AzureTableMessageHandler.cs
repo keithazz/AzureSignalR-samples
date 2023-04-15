@@ -34,10 +34,8 @@ namespace Microsoft.Azure.SignalR.Samples.InfotopiaChatRoom
         public async Task<string> AddNewMessage(string roomId, Message message){
             string sequenceId = DateTime.Now.Ticks.ToString();
             MessageEntity entity = new MessageEntity(roomId, sequenceId, message);
-
             TableOperation insertOperation = TableOperation.Insert(entity);
             var task = await _messageTable.ExecuteAsync(insertOperation);
-
             return sequenceId;
         }
 

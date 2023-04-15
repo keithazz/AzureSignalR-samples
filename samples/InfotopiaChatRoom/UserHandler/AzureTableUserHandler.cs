@@ -94,7 +94,6 @@ namespace Microsoft.Azure.SignalR.Samples.InfotopiaChatRoom
         }
 
         public async Task<string> GetUserConnectionId(string tenantId, string userId){
-            
             //old code but leaving here as a reference for combining queries
             //https://stackoverflow.com/a/18549818
             //string pkFilter = TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, tenantId);
@@ -106,7 +105,7 @@ namespace Microsoft.Azure.SignalR.Samples.InfotopiaChatRoom
             //there can be at most 1 result (PK and RK combo are guaranteed to be unique by design)
             //if the user is not registered, we get null and return an empty string
             //If the used is offline, the database should contain an empty string too.
-            var retrieveOperation = TableOperation.Retrieve<MessageEntity>(tenantId, userId);
+            var retrieveOperation = TableOperation.Retrieve<UserEntity>(tenantId, userId);
             var retrievedResult = await _userTable.ExecuteAsync(retrieveOperation);
             var entity = retrievedResult.Result as UserEntity;
             

@@ -38,11 +38,16 @@ namespace Microsoft.Azure.SignalR.Samples.InfotopiaChatRoom
         //use to add a user to a room group if they're online, or skip if they're offline
         private async Task AddUserToHubGroupIfOnlineAsync(string userId, string hubGroupName)
         {
+            Console.WriteLine(" -----  AddUserToHubGroupIfOnlineAsync called");
             string connection = await _userHandler.GetUserConnectionId(getTenantId(), userId);
+            Console.WriteLine(" -----  AddUserToHubGroupIfOnlineAsync printing connection string");
+            Console.WriteLine(" -----  AddUserToHubGroupIfOnlineAsync {0}", connection);
             //an empty string indicates that the user is not online
             if (connection!="") {
+                Console.WriteLine(" -----  AddUserToHubGroupIfOnlineAsync going to add to group");
                 await Groups.AddToGroupAsync(connection, hubGroupName);
             }
+            Console.WriteLine(" -----  AddUserToHubGroupIfOnlineAsync done");
 
         }
 

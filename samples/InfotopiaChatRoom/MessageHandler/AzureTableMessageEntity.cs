@@ -6,9 +6,9 @@ namespace Microsoft.Azure.SignalR.Samples.InfotopiaChatRoom
 {
     public class MessageEntity : TableEntity
     {
-        public string SenderId { get; }
+        public string SenderId { get; set; }
 
-        public DateTime SendTime { get; }
+        public string SendTime { get; set; }
 
         //TODO check if we should have this
         //public string SequenceId { get; set; }
@@ -26,13 +26,13 @@ namespace Microsoft.Azure.SignalR.Samples.InfotopiaChatRoom
             PartitionKey = pkey;
             RowKey = rkey;
             SenderId = message.SenderId;
-            SendTime = message.SendTime;
+            SendTime = message.SendTime.ToString("yyyy/MM/dd-HH:mm:ss");
             MessageContent = message.MessageContent;
             MessageType = message.MessageType;
         }
 
         public Message ToMessage() {
-            return new Message(SenderId, SendTime, MessageContent, MessageType) {
+            return new Message(SenderId, DateTime.ParseExact(SendTime,"yyyy/MM/dd-HH:mm:ss", null), MessageContent, MessageType) {
                 SequenceId = RowKey
             };
         }
