@@ -264,7 +264,7 @@
             //     1. show a prompt box to get the user ID
             //     2. remove from group chat via the hub
 
-            //TODO event handler for NewMessage events
+            //event handler for NewMessage events
             const handleNewMessageEvent = function (roomId, messageObj) {
                 console.log(`handleNewMessage: called`);
                 console.log(messageObj);
@@ -286,7 +286,7 @@
                 console.log(`handleNewMessage: done`);
             }
 
-            //TODO event handler for NewRoom events
+            //event handler for NewRoom events
             const handleNewRoomEvent = function (senderId, roomId, roomName, roomType) {
                 console.log(`handleNewRoom: called`);
                 console.log(`handleNewRoom: senderId=${senderId}, roomId=${roomId}, roomType=${roomType}`);
@@ -317,7 +317,7 @@
                 console.log(`handleNewReadReceipt: done`);
             }
 
-            //TODO event handler for NewStatusUpdate events
+            //event handler for NewStatusUpdate events
             const handleNewStatusUpdateEvent = function (senderId, status) {
                 console.log(`handleNewStatusUpdate: senderId=${senderId}, status=${status}`);
                 //update the status in the userList
@@ -330,6 +330,7 @@
                     //TODO just remove all references to connectionId in here
                     userList.push({userId: senderId, userStatus: status, connectionId: ''})
                 }
+                //TODO if the user has this private chat open, update the status
             }
 
             //function which adds the list of rooms to the UI from roomPreviewList
