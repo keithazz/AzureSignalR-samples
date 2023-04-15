@@ -310,10 +310,18 @@
                 console.log(`handleNewRoom: done`);
             }
 
-            //TODO event handler for NewReadReceipt events
+            //event handler for NewReadReceipt events
             const handleNewReadReceiptEvent = function (senderId, roomId, sequenceId) {
                 console.log(`handleNewReadReceipt: called`);
                 console.log(`handleNewReadReceipt: senderId=${senderId}, roomId=${roomId}, sequenceId=${sequenceId}`);
+                //TODO currently only handling the user's own read receipts
+                //eventually we want to show other users' read receipts too
+                if (senderId==currentUser) {
+                    var previewIndex = roomPreviewList.findIndex((preview) => preview.roomId == roomId);
+                    roomPreviewList[previewIndex].lastReadSequenceId = sequenceId;
+                    roomPreviewList[previewIndex].hasUnreadMessages = false;
+                    drawPreviewPanel();
+                }
                 console.log(`handleNewReadReceipt: done`);
             }
 
@@ -330,7 +338,7 @@
                     //TODO just remove all references to connectionId in here
                     userList.push({userId: senderId, userStatus: status, connectionId: ''})
                 }
-                //TODO if the user has this private chat open, update the status
+                //TODO if the user has this private chat open, update the status at the top
             }
 
             //function which adds the list of rooms to the UI from roomPreviewList
