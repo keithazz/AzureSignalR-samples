@@ -87,9 +87,15 @@
             let currentRoom = '';
             let currentUser = '';
             let currentTenant = '';
-            //the list of users with statuses;
+            //the list of users with statuses
             var userList = [];
+            //the list of rooms the user is subscribed too
+            //(to be shown on the left panel)
             var roomPreviewList = [];
+            //the list of messages for the currently open chat (currentRoom)
+            //to be shown on the right panel
+            var messageList = [];
+
 
             const generateGuid = function () {
                 return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
@@ -130,7 +136,6 @@
             document.getElementById('tenantId').innerText = tenantId;
             currentUser = userId;
             currentTenant = tenantId;
-            //TODO make a call to the UpdateLoginInfo hub method
 
             //  Set initial focus to message input box.
             const messageInput = document.getElementById('message');
@@ -139,12 +144,27 @@
             //NOTE additional setup steps in onConnected function
 
             // function to switch to a particular room
-            const switchToRoom = async function (connection, roomId) {
-                //TODO 1. get the list of messages for the chat from the hub
-                //TODO 2. add the messages to the messages div
-                //TODO 3. mark the last message in the room as read
+            const switchToRoom = async function (connection, roomId, roomName) {
+                console.log(`switchToRoom: called`);
+                console.log(`switchToRoom: ${roomId}`);
+                //0. update the name at the top of the message panel
+                //TODO for private chat, show if online/offline
+                document.getElementById('roomLabel').textContent = roomName;
+                //1. get the list of messages for the chat from the hub
+                //note that the messages may be unordered here, so we do the odering here
+                messageList = await connection.invoke('getChatMessagesAsync', roomId);
+                //single-line sort from https://stackoverflow.com/a/1129270
+                messageList.sort((a,b) => a.sequenceId - b.sequenceId);
+                //2. add the messages to the messages div
+                drawMessagePanel();
+                //3. mark the last message in the room as read
+                //TODO if the user has already read this message, we are sending an unnecessary NewReadReceipt event
+                var lastMessageId = messageList[messageList.length-1].sequenceId;
+                await connection.invoke('markMessageAsReadAsync', roomId, lastMessageId);
                 //TODO 4. if room is a group, show buttons to add/remove a new user
-                //TODO 5. update "currentRoom"
+                //5. update "currentRoom"
+                currentRoom = roomId;
+                console.log(`switchToRoom: done`);
             }
             
             // function to send messages
@@ -248,8 +268,13 @@
             const handleNewMessageEvent = function (roomId, messageObj) {
                 console.log(`handleNewMessage: called`);
                 console.log(messageObj);
-                //TODO handle the case where the user has the chat in question opened
-                //TODO figure out why sequenceId is null
+                //if the user has the chat in question opened, add the message to the chat
+                if (roomId == currentRoom) {
+                    //TODO reorder the messages based on the sequence ID just in case?
+                    messageInput.push(messageObj);
+                    drawMessagePanel();
+                }
+                //show the user that they got a new message in the preview panel
                 previewIndex = roomPreviewList.findIndex((obj => obj.roomId == roomId));
                 roomPreviewList[previewIndex].lastMessageSequenceId = messageObj.sequenceId;
                 roomPreviewList[previewIndex].lastMessageSenderId = messageObj.senderId;
@@ -257,7 +282,7 @@
                 roomPreviewList[previewIndex].lastMessageContent = messageObj.messageContent;
                 roomPreviewList[previewIndex].hasUnreadMessages = true;
                 console.log(roomPreviewList);
-                //TODO refresh the list of chat previews in the UI
+                drawPreviewPanel();
                 console.log(`handleNewMessage: done`);
             }
 
@@ -281,7 +306,7 @@
                         //TODO message time?
                 });
                 console.log(roomPreviewList);
-                //TODO refresh the list of chat previews in the UI
+                drawPreviewPanel();
                 console.log(`handleNewRoom: done`);
             }
 
@@ -306,6 +331,26 @@
                     userList.push({userId: senderId, userStatus: status, connectionId: ''})
                 }
             }
+
+            //function which adds the list of rooms to the UI from roomPreviewList
+            //TODO for private chats show the user status too?
+            //TODO currently always re-drawing from scratch
+            //TODO assumes correct order
+            const drawPreviewPanel = function() {
+                console.log(`drawPreviewPanel: called`);
+                console.log(roomPreviewList);
+                console.log(`drawPreviewPanel: done`);
+            }
+
+            //function which adds the messages from messageList to the UI
+            //TODO currently always re-drawing from scratch
+            //TODO assumes correct order
+            const drawMessagePanel = function() {
+                console.log(`drawMessagePanel: called`);
+                console.log(messageList);
+                console.log(`drawMessagePanel: done`);
+            }
+
 
             //master function which binds incoming events to their respective listeners
             const bindConnectionMessage = function (connection) {
@@ -342,10 +387,9 @@
                 });
                 console.log(roomPreviewList);
 
-                //TODO populate the roomList div
-                //TODO      compute which chats have unread messages
-                //TODO      combine with user status data (for private chats)
-                //TODO auto-select the very first room?
+                drawPreviewPanel();
+                
+                await switchToRoom(connection, roomPreviewList[0].roomId, roomPreviewList[0].displayName);
 
                 //add listeners for message sending functionality
                 //trigger the function whenever the "Send" button is pressed
