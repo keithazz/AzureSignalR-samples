@@ -115,8 +115,7 @@ namespace Microsoft.Azure.SignalR.Samples.InfotopiaChatRoom
             if (connection!="") {
                 await Clients.User(otherUserId+"-"+getTenantId()).SendAsync("NewRoom", userId, newRoomId, getUserId(), "Private");
             }
-            Message message = new Message(userId, DateTime.Now, userId + " started the chat", "Information");
-            await _messageHandler.AddNewMessage(newRoomId, message);
+            Message message = await _messageHandler.AddNewMessage(newRoomId, userId, DateTime.Now, userId + " started the chat", "Information");
             await Clients.Group(hubGroupName).SendAsync("NewMessage", newRoomId, message);
 
             return newRoomId;
@@ -146,8 +145,7 @@ namespace Microsoft.Azure.SignalR.Samples.InfotopiaChatRoom
                 await AddUserToHubGroupIfOnlineAsync(userId, hubGroupName);
             }
             await Clients.Group(hubGroupName).SendAsync("NewRoom", getUserId(), newRoomId, chatName,  "Group");
-            Message message = new Message(getUserId(), DateTime.Now, getUserId() + " created the group", "Information");
-            await _messageHandler.AddNewMessage(newRoomId, message);
+            Message message = await _messageHandler.AddNewMessage(newRoomId, getUserId(), DateTime.Now, getUserId() + " created the group", "Information");
             await Clients.Group(hubGroupName).SendAsync("NewMessage", newRoomId, message);
 
             return newRoomId;
@@ -159,12 +157,10 @@ namespace Microsoft.Azure.SignalR.Samples.InfotopiaChatRoom
             await _roomHandler.RemoveUserFromGroup(getUserId(), roomId);
             string hubGroupName = "room-"+roomId;
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, hubGroupName);
-            Message message = new Message(
-                                    getUserId(),
+            Message message = await _messageHandler.AddNewMessage(roomId, getUserId(),
                                     DateTime.Now,
                                     getUserId() + " has left the group chat",
                                     "Information");
-            await _messageHandler.AddNewMessage(roomId, message);
             await Clients.Group(hubGroupName).SendAsync("NewMessage", roomId, message);
         }
 
@@ -176,12 +172,10 @@ namespace Microsoft.Azure.SignalR.Samples.InfotopiaChatRoom
             await _roomHandler.AddUserToGroup(userId, roomMembership);
             string hubGroupName = "room-"+roomId;
             await AddUserToHubGroupIfOnlineAsync(userId, hubGroupName);
-            Message message = new Message(
-                                    getUserId(),
+            Message message = await _messageHandler.AddNewMessage(roomId, getUserId(),
                                     DateTime.Now,
                                     userId + " was added to the group chat",
                                     "Information");
-            await _messageHandler.AddNewMessage(roomId, message);
             await Clients.Group(hubGroupName).SendAsync("NewMessage", roomId, message);
         }
 
@@ -192,20 +186,17 @@ namespace Microsoft.Azure.SignalR.Samples.InfotopiaChatRoom
             await _roomHandler.RemoveUserFromGroup(userId, roomId);
             string hubGroupName = "room-"+roomId;
             await RemoveUserFromHubGroupIfOnlineAsync(userId, hubGroupName);
-            Message message = new Message(
-                                    getUserId(),
+            Message message = await _messageHandler.AddNewMessage(roomId, getUserId(),
                                     DateTime.Now,
                                     userId + " was kicked from the group chat",
                                     "Information");
-            await _messageHandler.AddNewMessage(roomId, message);
             await Clients.Group(hubGroupName).SendAsync("NewMessage", roomId, message);
         }
 
         public async Task SendTextMessageAsync(string roomId, string senderId, string messageContent)
         {
-            Message message = new Message(getUserId(), DateTime.Now, messageContent, "Text");
             string hubGroupName = "room-"+roomId;
-            await _messageHandler.AddNewMessage(roomId, message);
+            Message message = await _messageHandler.AddNewMessage(roomId, getUserId(), DateTime.Now, messageContent, "Text");
             await Clients.Group(hubGroupName).SendAsync("NewMessage", roomId, message);
         } 
 

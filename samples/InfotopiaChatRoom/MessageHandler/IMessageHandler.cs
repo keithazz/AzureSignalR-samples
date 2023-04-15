@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System;
 
 namespace Microsoft.Azure.SignalR.Samples.InfotopiaChatRoom
 {
@@ -12,9 +13,12 @@ namespace Microsoft.Azure.SignalR.Samples.InfotopiaChatRoom
         /// Add a new message to the storage.
         /// </summary>
         /// <param name="roomId"></param>
-        /// <param name="message"></param>
-        /// <returns>The sequenceId of the new message.</returns>
-        Task<string> AddNewMessage(string roomId, Message message);
+        /// <param name="senderId"></param>
+        /// <param name="sendTime"></param>
+        /// <param name="messageContent"></param>
+        /// <param name="messageType"></param>
+        /// <returns>A new message object with the sequence ID included</returns>
+        Task<Message> AddNewMessage(string roomId, string senderId, DateTime sendTime, string messageContent, string messageType);
 
         //TODO paginate
         /// <summary>

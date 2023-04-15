@@ -18,9 +18,10 @@ namespace Microsoft.Azure.SignalR.Samples.InfotopiaChatRoom
         //for now, "TextMessage" or "Information"
         public string MessageType { get; set; }
 
-        public Message(string senderId, DateTime sendTime, string messageContent, string messageType)
+        public Message(string senderId, string sequenceId, DateTime sendTime, string messageContent, string messageType)
         {
             SenderId = senderId;
+            SequenceId = sequenceId;
             SendTime = sendTime;
             MessageContent = messageContent;
             MessageType = messageType;

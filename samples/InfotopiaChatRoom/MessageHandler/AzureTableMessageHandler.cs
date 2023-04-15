@@ -31,12 +31,19 @@ namespace Microsoft.Azure.SignalR.Samples.InfotopiaChatRoom
             _messageTable.CreateIfNotExistsAsync();
         }
 
-        public async Task<string> AddNewMessage(string roomId, Message message){
+        public async Task<Message> AddNewMessage(string roomId, string senderId, DateTime sendTime, string messageContent, string messageType){
             string sequenceId = DateTime.Now.Ticks.ToString();
+            Message message = new Message(
+                senderId,
+                sequenceId,
+                sendTime,
+                messageContent,
+                messageType
+            );
             MessageEntity entity = new MessageEntity(roomId, sequenceId, message);
             TableOperation insertOperation = TableOperation.Insert(entity);
             var task = await _messageTable.ExecuteAsync(insertOperation);
-            return sequenceId;
+            return message;
         }
 
         //TODO paginate

@@ -32,9 +32,7 @@ namespace Microsoft.Azure.SignalR.Samples.InfotopiaChatRoom
         }
 
         public Message ToMessage() {
-            return new Message(SenderId, DateTime.ParseExact(SendTime,"yyyy/MM/dd-HH:mm:ss", null), MessageContent, MessageType) {
-                SequenceId = RowKey
-            };
+            return new Message(SenderId, RowKey, DateTime.ParseExact(SendTime,"yyyy/MM/dd-HH:mm:ss", null), MessageContent, MessageType);
         }
     }
 
