@@ -60,6 +60,19 @@
             </td>
         </tr>
     </table>
+    <div style="height: 100px; width: 60%; margin-left: 20%; display: flex; justify-content: space-evenly;" id="groupButtons">
+        <div style="width: 100px; display: flex; justify-content: center; align-items: center;">
+            <button style="width: 150px; height: 40px;" id="addUserToGroup">Add User</button>
+        </div>
+
+        <div style="width: 100px; display: flex; justify-content: center; align-items: center;">
+            <button style="width: 150px; height: 40px;" id="removeUserFromGroup">Kick User</button>
+        </div>
+
+        <div style="width: 100px; display: flex; justify-content: center; align-items: center;">
+            <button style="width: 150px; height: 40px;" id="leaveGroup">Leave Group</button>
+        </div>
+    </div>
     <div class="modal alert alert-danger fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
@@ -144,7 +157,7 @@
             //NOTE additional setup steps in onConnected function
 
             // function to switch to a particular room
-            const switchToRoom = async function (connection, roomId, roomName) {
+            const switchToRoom = async function (connection, roomId, roomName, roomType) {
                 console.log(`switchToRoom: called`);
                 console.log(`switchToRoom: ${roomId}`);
                 //0. update the name at the top of the message panel
@@ -161,7 +174,13 @@
                 //TODO if the user has already read this message, we are sending an unnecessary NewReadReceipt event
                 var lastMessageId = messageList[messageList.length-1].sequenceId;
                 await connection.invoke('markMessageAsReadAsync', roomId, lastMessageId);
-                //TODO 4. if room is a group, show buttons to add/remove a new user
+                //4. if room is a group, show buttons to add/remove a new user
+                var x = document.getElementById("groupButtons");
+                if (roomType=="Group") {
+                    x.style.display = "flex";
+                } else {
+                    x.style.display = "none";
+                }
                 //5. update "currentRoom"
                 currentRoom = roomId;
                 console.log(`switchToRoom: done`);
@@ -190,7 +209,7 @@
 
             //WIP add a function which listens for clicks on the "New Group Chat" button
             //TODO swtich from free text to a selector
-            const createGroupChat = function () {
+            const createGroupChat = async function () {
                 console.log(`createGroupChat: called`);
                 //     1. get the group chat name
                 let chatName = "";
@@ -200,7 +219,7 @@
                     if (!chatName || chatName.startsWith('_') || chatName.indexOf('<') > -1 || chatName.indexOf(
                         '>') > -1) {
                         chatName = '';
-                        promptMessage = 'Invalid input. Enter your ID:';
+                        promptMessage = 'Invalid input. Enter a name for the group chat:';
                     }
                 } while (!chatName);
 
@@ -227,7 +246,8 @@
                 console.log(`creating private chat ${chatName} with admin ${userId} and members: ${memberList}`);
 
                 //     2. create the group chat via the hub
-                //TODO
+                //TODO make use of the room ID?
+                const roomId = await connection.invoke('createGroupChatAsync', [userId], memberList, chatName);
 
                 console.log(`createGroupChat: done`);
             }
@@ -244,7 +264,7 @@
                     if (!otherUserId || otherUserId.startsWith('_') || otherUserId.indexOf('<') > -1 || otherUserId.indexOf(
                         '>') > -1) {
                         otherUserId = '';
-                        promptMessage = 'Invalid input. Enter your ID:';
+                        promptMessage = 'Invalid input. Enter a valid user ID:';
                     }
                 } while (!otherUserId);
                 console.log(`creating private chat with ${otherUserId}`);
@@ -256,13 +276,52 @@
             }
 
 
-            //TODO add a function which listens for clicks on the "Add User" button
-            //     1. show a prompt box to get the user ID
-            //     2. add to group chat via the hub
+            //function which asks the user for the ID of another user to add to a group
+            //TODO switch from free text to a selector
+            const addUserToGroup = async function () {
+                //     1. show a dialog box to get the required info
+                let otherUserId = "";
+                promptMessage = "Enter the ID of the user you want to add:";
+                do {
+                    otherUserId = prompt(promptMessage, otherUserId);
+                    if (!otherUserId || otherUserId.startsWith('_') || otherUserId.indexOf('<') > -1 || otherUserId.indexOf(
+                        '>') > -1) {
+                        otherUserId = '';
+                        promptMessage = 'Invalid input. Enter a valid user ID:';
+                    }
+                } while (!otherUserId);
+                console.log(`adding ${otherUserId} to ${currentRoom}`);
 
-            //TODO add a function which listens for clicks on the "Remove User" button
-            //     1. show a prompt box to get the user ID
-            //     2. remove from group chat via the hub
+                //TODO this is a hacky way of getting the room name
+                var roomName = document.getElementById('roomLabel').textContent
+
+                await connection.invoke('addUserToGroupAsync', otherUserId, currentRoom, roomName, "Member");
+            }
+
+            //function which asks the user for the ID of another user to remove from a group
+            //TODO switch from free text to a selector
+            const removeUserFromGroup = async function () {
+                //     1. show a dialog box to get the required info
+                let otherUserId = "";
+                promptMessage = "Enter the ID of the user you want to remove:";
+                do {
+                    otherUserId = prompt(promptMessage, otherUserId);
+                    if (!otherUserId || otherUserId.startsWith('_') || otherUserId.indexOf('<') > -1 || otherUserId.indexOf(
+                        '>') > -1) {
+                        otherUserId = '';
+                        promptMessage = 'Invalid input. Enter a valid user ID:';
+                    }
+                } while (!otherUserId);
+                console.log(`removing ${otherUserId} from ${currentRoom}`);
+
+                await connection.invoke('removeUserFromGroupAsync', otherUserId, currentRoom);
+            }
+
+            //function to call when the user wants to leave a group
+            //TODO remove from roomPreviewList?
+            const leaveGroup = async function () {
+                await connection.invoke('leaveGroupAsync', currentRoom);
+            }
 
             //event handler for NewMessage events
             const handleNewMessageEvent = function (roomId, messageObj) {
@@ -398,7 +457,7 @@
 
                 drawPreviewPanel();
                 
-                await switchToRoom(connection, roomPreviewList[0].roomId, roomPreviewList[0].displayName);
+                await switchToRoom(connection, roomPreviewList[0].roomId, roomPreviewList[0].displayName, roomPreviewList[0].roomType);
 
                 //add listeners for message sending functionality
                 //trigger the function whenever the "Send" button is pressed
@@ -419,7 +478,10 @@
                 document.getElementById('newGroupChat').addEventListener('click', (event) => createGroupChat());
                 document.getElementById('newPrivateChat').addEventListener('click', (event) => createPrivateChat());
 
-                //TODO add listeners for adding & removing group chat users
+                //listeners for chat memeber list modification functions
+                document.getElementById('addUserToGroup').addEventListener('click', (event) => addUserToGroup());
+                document.getElementById('removeUserFromGroup').addEventListener('click', (event) => removeUserFromGroup());
+                document.getElementById('leaveGroup').addEventListener('click', (event) => leaveGroup());
             }
 
             function onConnectionError(error) {
