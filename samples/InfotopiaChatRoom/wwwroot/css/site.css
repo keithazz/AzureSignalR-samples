@@ -70,12 +70,17 @@ textarea:focus {
     background-color: #b0e2b2;
 }
 
+.roomcardunread {
+    font-weight: bold;
+    font-style: oblique;
+}
+
 .roomcardname {
     text-overflow: ellipsis;
     white-space: nowrap;
     overflow: hidden;
     padding-left: 5px;
-    font-size: 24px;
+    font-size: 22px;
     color: #606060;
 }
 

@@ -32,7 +32,9 @@ namespace Microsoft.Azure.SignalR.Samples.InfotopiaChatRoom
         }
 
         public async Task<Message> AddNewMessage(string roomId, string senderId, DateTime sendTime, string messageContent, string messageType){
-            string sequenceId = DateTime.Now.Ticks.ToString();
+            //TODO check for time zone fuckups
+            DateTime timestamp = DateTime.UtcNow;
+            string sequenceId = timestamp.Ticks.ToString();
             Message message = new Message(
                 senderId,
                 sequenceId,
@@ -40,7 +42,7 @@ namespace Microsoft.Azure.SignalR.Samples.InfotopiaChatRoom
                 messageContent,
                 messageType
             );
-            MessageEntity entity = new MessageEntity(roomId, sequenceId, message);
+            MessageEntity entity = new MessageEntity(roomId, timestamp, message);
             TableOperation insertOperation = TableOperation.Insert(entity);
             var task = await _messageTable.ExecuteAsync(insertOperation);
             return message;
@@ -77,14 +79,15 @@ namespace Microsoft.Azure.SignalR.Samples.InfotopiaChatRoom
                     TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, roomId)
                 )
                 //Azure Storage Table automatically orders each partition by row key, so this gives us the last message
-                //TODO if this starts returning the first message, we'll need to store in reverse order
-                //https://stackoverflow.com/a/40594821
+                //see comment in AzureTableMessageEntity
                 .Take(1);
+                
 
                 var result = await _messageTable.ExecuteQuerySegmentedAsync<MessageEntity>(query, null);
                 
                 //TODO is this the correct way to convert to a list and read the first entity?
                 messageMap[roomId] = result.Results[0].ToMessage();
+                Console.WriteLine("-----------> first message for {0} is {1}",roomId, messageMap[roomId].MessageContent);
             }
 
             return messageMap;   

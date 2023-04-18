@@ -333,14 +333,15 @@
             }
 
             //event handler for NewMessage events
-            const handleNewMessageEvent = function (roomId, messageObj) {
+            const handleNewMessageEvent = async function (roomId, messageObj) {
                 console.log(`handleNewMessage: called`);
                 console.log(messageObj);
                 //if the user has the chat in question opened, add the message to the chat
                 if (roomId == currentRoom) {
                     //TODO reorder the messages based on the sequence ID just in case?
-                    messageInput.push(messageObj);
+                    messageList.push(messageObj);
                     drawMessagePanel();
+                    await connection.invoke('markMessageAsReadAsync', roomId, messageObj.sequenceId);
                 }
                 //show the user that they got a new message in the preview panel
                 previewIndex = roomPreviewList.findIndex((obj => obj.roomId == roomId));
@@ -436,7 +437,9 @@
                     entry.classList.add("roomcard");
                     if (roomId == currentRoom) {
                         entry.classList.add("currentroomcard");
-                        console.log(`selected`)
+                    }
+                    if (prev.hasUnreadMessages) {
+                        entry.classList.add("roomcardunread");
                     }
                     //TODO apply modification for unread messages
                     entry.innerHTML =
@@ -501,10 +504,11 @@
                 });
                 console.log(roomPreviewList);
 
-                drawPreviewPanel();
+                if (roomPreviewList.length > 0) {
+                    drawPreviewPanel();
+                    await switchToRoom(connection, roomPreviewList[0].roomId, roomPreviewList[0].displayName, roomPreviewList[0].roomType);
+                }
                 
-                await switchToRoom(connection, roomPreviewList[0].roomId, roomPreviewList[0].displayName, roomPreviewList[0].roomType);
-
                 //add listeners for message sending functionality
                 //trigger the function whenever the "Send" button is pressed
                 document.getElementById('sendmessage').addEventListener('click', (event) => sendUserMessage(connection));
