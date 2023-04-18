@@ -37,10 +37,10 @@
             <button style="width: 150px; height: 40px;" id="leaveGroup">Leave Group</button>
         </div>
     </div>
-    <table style="height: calc(100% - 200px); width: 60%; margin-left: 20%; 
+    <table style="height: calc(100% - 200px); width: 80%; margin-left: 10%; 
     table-layout:fixed">
         <tr>
-            <td style="width: 20%;height: 100%;">
+            <td style="width: 30%;height: 100%;">
                 <div style="height: 40px; background-color:#eee;">
                     <div id="userId"
                         style="font-size: 24px; width: 100%; padding: 5px 10px; border-style: hidden;height: 100%;
@@ -159,23 +159,26 @@
 
             // function to switch to a particular room
             const switchToRoom = async function (connection, roomId, roomName, roomType) {
+                //TODO if user clicks on the same room, skip the unnecessary processing
                 console.log(`switchToRoom: called`);
                 console.log(`switchToRoom: ${roomId}`);
-                //0. update the name at the top of the message panel
+                //1. update "currentRoom"
+                currentRoom = roomId;
+                //2. update the name at the top of the message panel,
                 //TODO for private chat, show if online/offline
                 document.getElementById('roomLabel').textContent = roomName;
-                //1. get the list of messages for the chat from the hub
+                //3. get the list of messages for the chat from the hub
                 //note that the messages may be unordered here, so we do the odering here
                 messageList = await connection.invoke('getChatMessagesAsync', roomId);
                 //single-line sort from https://stackoverflow.com/a/1129270
                 messageList.sort((a,b) => a.sequenceId - b.sequenceId);
-                //2. add the messages to the messages div
+                //4. add the messages to the messages div
                 drawMessagePanel();
-                //3. mark the last message in the room as read
+                //4. mark the last message in the room as read
                 //TODO if the user has already read this message, we are sending an unnecessary NewReadReceipt event
                 var lastMessageId = messageList[messageList.length-1].sequenceId;
                 await connection.invoke('markMessageAsReadAsync', roomId, lastMessageId);
-                //4. if room is a group, show buttons to add/remove a new user
+                //5. if room is a group, show buttons to add/remove a new user
                 var b1 = document.getElementById("addUserToGroup");
                 var b2 = document.getElementById("removeUserFromGroup");
                 var b3 = document.getElementById("leaveGroup");
@@ -188,8 +191,7 @@
                     b2.style.display = "none";
                     b3.style.display = "none";
                 }
-                //5. update "currentRoom"
-                currentRoom = roomId;
+                
                 console.log(`switchToRoom: done`);
             }
             
@@ -346,7 +348,7 @@
                 roomPreviewList[previewIndex].lastMessageSenderId = messageObj.senderId;
                 roomPreviewList[previewIndex].lastMessageType = messageObj.messageType;
                 roomPreviewList[previewIndex].lastMessageContent = messageObj.messageContent;
-                roomPreviewList[previewIndex].hasUnreadMessages = true;
+                roomPreviewList[previewIndex].hasUnreadMessages = messageObj.senderId!=currentUser;
                 console.log(roomPreviewList);
                 drawPreviewPanel();
                 console.log(`handleNewMessage: done`);
@@ -414,6 +416,43 @@
             const drawPreviewPanel = function() {
                 console.log(`drawPreviewPanel: called`);
                 console.log(roomPreviewList);
+                var newChildren = roomPreviewList.map((prev) => {
+                    roomId = prev.roomId;
+                    var sender = ((prev.lastMessageSenderId==currentUser) ? 'you' : prev.lastMessageSenderId);
+                    var name = `${prev.displayName} (${prev.roomType})`;
+                    
+                    //TODO handle non-text message types
+                    var t = prev.lastMessageType;
+                    var msg = "";
+                    if (t=='Text') {
+                        var msg = `${sender}: ${prev.lastMessageContent}`;
+                    }
+                    else if (t=='Information') {
+                        var msg = prev.lastMessageContent;
+                    }
+
+                    const entry = document.createElement('div');
+                    entry.id = roomId;
+                    entry.classList.add("roomcard");
+                    if (roomId == currentRoom) {
+                        entry.classList.add("currentroomcard");
+                        console.log(`selected`)
+                    }
+                    //TODO apply modification for unread messages
+                    entry.innerHTML =
+                        `<div class="roomcardname" id="room-${roomId}">${name}</div>
+                        <div class="roomcardmessage" id="message-${roomId}">${msg}</div>`;
+                    const roomIdFixed = roomId;
+                    entry.addEventListener('click', (event) => {    
+                        console.log(`switching to room ${roomIdFixed} (${prev.displayName})`);
+                        //TODO where to get the connection?
+                        switchToRoom(connection,roomIdFixed,prev.displayName, prev.roomType);
+                    });
+
+                    return entry;
+                });
+                document.getElementById("roomList").replaceChildren(...newChildren);
+
                 console.log(`drawPreviewPanel: done`);
             }
 
