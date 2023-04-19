@@ -252,11 +252,11 @@
                         promptMessage = 'User Added. Enter another user ID or leave empty to stop:';
                     }
                 }
-                console.log(`creating private chat ${chatName} with admin ${userId} and members: ${memberList}`);
+                console.log(`creating private chat ${chatName} with admin ${currentUser} and members: ${memberList}`);
 
                 //     2. create the group chat via the hub
                 //TODO make use of the room ID?
-                const roomId = await connection.invoke('createGroupChatAsync', [userId], memberList, chatName);
+                const roomId = await connection.invoke('createGroupChatAsync', [currentUser], memberList, chatName);
 
                 console.log(`createGroupChat: done`);
             }
@@ -387,8 +387,14 @@
                 //eventually we want to show other users' read receipts too
                 if (senderId==currentUser) {
                     var previewIndex = roomPreviewList.findIndex((preview) => preview.roomId == roomId);
+                    console.log(`handleNewReadReceipt: going to preview at index ${previewIndex}`);
+                    console.log(roomPreviewList[previewIndex].lastReadSequenceId);
+                    console.log(roomPreviewList[previewIndex].hasUnreadMessages);
                     roomPreviewList[previewIndex].lastReadSequenceId = sequenceId;
                     roomPreviewList[previewIndex].hasUnreadMessages = false;
+                    console.log(`handleNewReadReceipt: updated preview at index ${previewIndex}`);
+                    console.log(roomPreviewList[previewIndex].lastReadSequenceId);
+                    console.log(roomPreviewList[previewIndex].hasUnreadMessages);
                     drawPreviewPanel();
                 }
                 console.log(`handleNewReadReceipt: done`);
