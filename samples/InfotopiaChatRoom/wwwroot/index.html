@@ -481,9 +481,9 @@
                     entry.classList.add("system-message");
                 } else if (messageType === "Text") {
                     if (senderId === currentUser) {
-                    entry.innerHTML =
-                        `<div class="message-avatar pull-right" id="sequenceId-${sequenceId}">you<br />${sendTime}</div>` +
-                        `<div class="message-content pull-right">${messageContent}<div>`;
+                        entry.innerHTML =
+                            `<div class="message-avatar pull-right" id="sequenceId-${sequenceId}">you<br />${sendTime}</div>` +
+                            `<div class="message-content pull-right">${messageContent}<div>`;
                     } else {
                         entry.innerHTML =
                             `<div class="message-avatar pull-left" id="sequenceId-${sequenceId}">${senderId}<br />${sendTime}</div>` +
