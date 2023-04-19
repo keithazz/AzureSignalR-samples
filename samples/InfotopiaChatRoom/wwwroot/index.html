@@ -459,12 +459,57 @@
                 console.log(`drawPreviewPanel: done`);
             }
 
+            //helper for drawMessagePanel
+            const addNewMessageToScreen = function (messageEntry) {
+                const messageBoxElement = document.getElementById('messages');
+                messageBoxElement.appendChild(messageEntry);
+                messageBoxElement.scrollTop = messageBoxElement.scrollHeight;
+
+                //  Clear text box and reset focus for next comment.
+                messageInput.value = '';
+                messageInput.focus();
+                event.preventDefault();
+            }
+
+            //helper for drawMessagePanel
+            const createNewMessage = function (senderId, messageContent, messageType, sequenceId, sendTime) {
+                const entry = document.createElement('div');
+                entry.classList.add("message-entry");
+                if (messageType === "Information") {
+                    entry.innerHTML = messageContent;
+                    entry.classList.add("text-center");
+                    entry.classList.add("system-message");
+                } else if (messageType === "Text") {
+                    if (senderId === currentUser) {
+                    entry.innerHTML =
+                        `<div class="message-avatar pull-right" id="sequenceId-${sequenceId}">you<br />${sendTime}</div>` +
+                        `<div class="message-content pull-right">${messageContent}<div>`;
+                    } else {
+                        entry.innerHTML =
+                            `<div class="message-avatar pull-left" id="sequenceId-${sequenceId}">${senderId}<br />${sendTime}</div>` +
+                            `<div class="message-content pull-left">${messageContent}<div>`;
+                    }
+                }
+                return entry;
+            }
+
             //function which adds the messages from messageList to the UI
             //TODO currently always re-drawing from scratch
             //TODO assumes correct order
             const drawMessagePanel = function() {
                 console.log(`drawMessagePanel: called`);
                 console.log(messageList);
+                const messageBoxElement = document.getElementById('messages');
+                messageBoxElement.innerHTML = ``;
+                messageBoxElement.innerText = ``;
+                messageList.forEach(message => {
+                    var messageEntry = createNewMessage(message.senderId,
+                                                        message.messageContent,
+                                                        message.messageType,
+                                                        message.sequenceId,
+                                                        message.sendTime)
+                    addNewMessageToScreen(messageEntry)
+                });
                 console.log(`drawMessagePanel: done`);
             }
 
